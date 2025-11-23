@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "620622518870",
+    "project_id": "cinetrack-b8988",
+    "storage_bucket": "cinetrack-b8988.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:620622518870:android:d06d0d3764f48d13d039f7",
+        "android_client_info": {
+          "package_name": "com.example.tmdbmovies"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC7-4-z3fDkY_pSUYK2dbRF5fnO6wraaQU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,422 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:tmdbmovies/Databasemethods.dart';
+import 'package:tmdbmovies/appdesign.dart';
+import 'package:tmdbmovies/sharedprefs.dart';
+
+class AccountSettingsPage extends StatefulWidget {
+  const AccountSettingsPage({super.key});
+
+  @override
+  State<AccountSettingsPage> createState() => _AccountSettingsPageState();
+}
+
+class _AccountSettingsPageState extends State<AccountSettingsPage> {
+  bool _isVisible = false;
+  bool _isloading = false;
+  String? confirmPass;
+  final _globalKey = GlobalKey<FormState>();
+  String? userName,email,pass,userId;
+  TextEditingController usr = TextEditingController();
+  TextEditingController eml = TextEditingController();
+  TextEditingController pss = TextEditingController();
+  TextEditingController confirm = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    getUserDetails();
+  }
+
+  void getUserDetails() async{
+    userId = await SharedPreferenceHelper().getUserId();
+    userName = await SharedPreferenceHelper().getUsername();
+    email  = await SharedPreferenceHelper().getEmail();
+    pass = await SharedPreferenceHelper().getPassword();
+
+    usr.text = userName!.trim();
+    eml.text = email!.trim();
+    pss.text = pass!.trim();
+    setState(() {
+
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppDesign().bgColor,
+      appBar: AppBar(
+        titleSpacing: 35,
+        backgroundColor: AppDesign().bgColor,
+        title: Text('Account Settings',style: TextStyle(color: AppDesign().textColor,
+            fontWeight: FontWeight.bold,fontFamily: 'Roboto',fontSize: 20)),
+        iconTheme: IconThemeData(
+          color: AppDesign().textColor
+        ),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              ExpansionTile(title: Text('Personal Information',
+                  style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',fontWeight: FontWeight.bold)),
+              backgroundColor: Colors.grey.shade800,
+              childrenPadding: EdgeInsets.all(10),
+              iconColor: Colors.white,
+              collapsedIconColor: Colors.white,
+              textColor: AppDesign().textColor,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10)
+              ),
+              children: [
+                Form(
+                  key: _globalKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Username',style: TextStyle(color: AppDesign().textColor)),
+                      TextFormField(
+                        controller: usr,
+                        validator: (value){
+                          if(value==null || value.isEmpty){
+                            return 'Username cannot be blank';
+                          }else{
+                            return null;
+                          }
+                        },
+                        onSaved: (value) {
+                          usr.text = value!;
+                        },
+                        decoration: InputDecoration(
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          )
+                        ),
+                      ),
+
+                      SizedBox(height: 5),
+
+                      Text('Email Address',style: TextStyle(color: AppDesign().textColor)),
+                      TextFormField(
+                        controller: eml,
+                        validator: (value) {
+                          if(!(value!.contains("@"))){
+                            return 'Invalid email format';
+                          }else{
+                            return null;
+                          }
+                        },
+                        onSaved: (value){
+                          eml.text = value!;
+                        },
+                        decoration: InputDecoration(
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            )
+                        ),
+                      ),
+
+                      SizedBox(height: 5),
+
+                      Text('Change Password',style: TextStyle(color: AppDesign().textColor)),
+                      TextFormField(
+                        controller: pss,
+                        obscureText: !_isVisible,
+                        obscuringCharacter: '*',
+                        validator: (value) {
+                          if(value!.length<8){
+                            return 'Password length should be minimum 8 digits';
+                          }
+                        },
+                        onSaved: (value){
+                          pss.text = value!;
+                        },
+                        decoration: InputDecoration(
+                          suffixIcon: GestureDetector(
+                            onTap: (){
+                              setState(() {
+                                _isVisible = !_isVisible;
+                              });
+                            },
+                              child: _isVisible ? Icon(Icons.visibility,color: Colors.white) : Icon(Icons.visibility_off,color: Colors.white)),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            )
+                        ),
+                      ),
+
+                      SizedBox(height: 5),
+
+                      Container(
+                        width: MediaQuery.of(context).size.width,
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10)
+                        ),
+                        child: ElevatedButton(onPressed: () async{
+                          if(_globalKey.currentState!.validate()){
+                            if((userName == usr.text || email == eml.text || pass == pss.text)){
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Nothing to update")));
+                            }else{
+                              var checkUsr = usr.text;
+                              var checkEmail = eml.text;
+                              var checkPss = pss.text;
+
+                              setState(() {
+                                _isloading = true;
+                              });
+
+                              await DatabaseOptions().updateUserName(userId!, checkUsr);
+                              await DatabaseOptions().updateEmail(userId!, checkEmail);
+                              await DatabaseOptions().updatePassword(userId!, checkPss);
+
+                              await SharedPreferenceHelper().setUsername(checkUsr);
+                              await SharedPreferenceHelper().setEmail(checkEmail);
+                              await SharedPreferenceHelper().setPassword(checkPss);
+
+                              setState(() {
+                                _isloading = false;
+                              });
+
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Changes saved successfully')));
+
+                            }
+                          }
+                        },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppDesign().primaryAccent,
+                            ),
+                            child: Text('Save Changes',style: TextStyle(color: AppDesign().textColor,
+                                fontFamily: 'Roboto',fontWeight: FontWeight.bold,fontSize: 18))),
+                      ),
+                    ],
+                  ),
+                )
+              ]),
+          
+              SizedBox(
+                height: 10,
+              ),
+          
+              ExpansionTile(title: Text('Notification Preferences',
+                  style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',fontWeight: FontWeight.bold)),
+                  backgroundColor: Colors.grey.shade800,
+                  childrenPadding: EdgeInsets.all(10),
+                  iconColor: Colors.white,
+                  collapsedIconColor: Colors.white,
+                  textColor: AppDesign().textColor,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)
+                  ),
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('New Episode Alerts',style: TextStyle(color: AppDesign().textColor)),
+                                Text("Get the top new episodes alerts first.",style: TextStyle(color: AppDesign().secondaryTextColor))
+                              ],
+                            ),
+          
+                            Expanded(
+                              child: Align(
+                                alignment: Alignment.centerRight,
+                                child: Switch(value: true,
+                                    inactiveTrackColor: Colors.grey.shade500,
+                                    activeTrackColor: AppDesign().primaryAccent,
+                                    onChanged: (value) {
+                              
+                                }),
+                              ),
+                            )
+                          ],
+                        ),
+          
+                        SizedBox(height: 5),
+          
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Recommendations Alerts',style: TextStyle(color: AppDesign().textColor)),
+                                Text("Personalized show suggestion.",style: TextStyle(color: AppDesign().secondaryTextColor))
+                              ],
+                            ),
+          
+                            Expanded(
+                              child: Align(
+                                alignment: Alignment.centerRight,
+                                child: Switch(value: true,
+                                    inactiveTrackColor: Colors.grey.shade500,
+                                    activeTrackColor: AppDesign().primaryAccent,
+                                    onChanged: (value) {
+                              
+                                    }),
+                              ),
+                            )
+                          ],
+                        ),
+          
+                        SizedBox(height: 5),
+          
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('App Updates & News',style: TextStyle(color: AppDesign().textColor)),
+                                Text("New features,tips, and announcements.",style: TextStyle(color: AppDesign().secondaryTextColor))
+                              ],
+                            ),
+          
+                            Expanded(
+                              child: Align(
+                                alignment: Alignment.centerRight,
+                                child: Switch(value: true,
+                                    inactiveTrackColor: Colors.grey.shade500,
+                                    activeTrackColor: AppDesign().primaryAccent,
+                                    onChanged: (value) {
+                              
+                                    }),
+                              ),
+                            )
+                          ],
+                        ),
+          
+                        Container(
+                          width: MediaQuery.of(context).size.width,
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10)
+                          ),
+                          child: ElevatedButton(onPressed: (){},
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppDesign().primaryAccent,
+                              ),
+                              child: Text('Save Preferences',style: TextStyle(color: AppDesign().textColor,
+                                  fontFamily: 'Roboto',fontWeight: FontWeight.bold,fontSize: 18))),
+                        ),
+                      ],
+                    )
+                  ]),
+
+                SizedBox(
+                  height: 20,
+                ),
+
+              SizedBox(
+                height: 20,
+              ),
+
+              Form(
+                key: _globalKey,
+                child: Container(
+                  width: MediaQuery.of(context).size.width,
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(5)
+                  ),
+                  child: ElevatedButton(onPressed: (){
+                    showDialog(context: context, builder: (context) {
+                      return AlertDialog(
+                        title: Text("Are you sure you want to delete account?",style: TextStyle(color: Colors.red)),
+                        content: Text("Once deleted account cannot be restored."),
+                        elevation: 5,
+                        icon: Icon(Icons.warning),
+                        iconColor: Colors.red,
+                        actions: [
+                          TextButton(onPressed: () async{
+                            Navigator.pop(context);
+                            showDialog(context: context,
+                                builder: (context) {
+                                  return SimpleDialog(
+                                    elevation: 5,
+                                    title: Text("Confirm your identity?",style: TextStyle(color: Colors.red)),
+                                    backgroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(5)
+                                    ),
+                                    children: [
+                                      Text("Re-enter your password to confirm identity",style: TextStyle(color: Colors.red)),
+                                      Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: TextFormField(
+                                          controller : confirm,
+                                          decoration: InputDecoration(
+                                            border: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(5)
+                                            ),
+                                            focusedBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(5),
+                                              borderSide: BorderSide(
+                                                color: Colors.black
+                                              )
+                                            )
+                                          ),
+                                          validator: (value) {
+                                            if(pass!=value){
+                                              return 'Please enter your correct password';
+                                            }else{
+                                              confirmPass = value;
+                                              print(confirmPass);
+                                              return null;
+                                            }
+                                          },
+                                        ),
+                                      ),
+                                      TextButton(onPressed: () async{
+                                        if(_globalKey.currentState!.validate()){
+
+                                          setState(() {
+                                            _isloading = true;
+                                          });
+
+                                          var result = await DatabaseOptions().deleteUserAccount(confirmPass!);
+
+                                          setState(() {
+                                            _isloading = false;
+                                          });
+
+                                          if(result == 1){
+                                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User account deleted successfully")));
+                                          }else{
+                                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error deleting user account")));
+                                          }
+                                        }
+                                      }, child: Text('OK'))
+                                    ],
+                                  );
+                                });
+                          }, child: Text('Yes')),
+                          TextButton(onPressed: (){
+                            Navigator.pop(context);
+                          }, child: Text('No'))
+                        ],
+                      );
+                    });
+                  },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey.shade800,
+                      ),
+                      child: Text('Delete Account',style: TextStyle(color: Colors.redAccent,
+                          fontFamily: 'Roboto',fontWeight: FontWeight.bold,fontSize: 18))),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
