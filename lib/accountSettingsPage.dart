@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:tmdbmovies/Databasemethods.dart';
 import 'package:tmdbmovies/appdesign.dart';
 import 'package:tmdbmovies/sharedprefs.dart';
+import 'package:tmdbmovies/signuppage.dart';
+import 'package:loading_overlay/loading_overlay.dart';
 
 class AccountSettingsPage extends StatefulWidget {
   const AccountSettingsPage({super.key});
@@ -16,6 +18,7 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
   bool _isloading = false;
   String? confirmPass;
   final _globalKey = GlobalKey<FormState>();
+  final _deleteglobalKey = GlobalKey<FormState>();
   String? userName,email,pass,userId;
   TextEditingController usr = TextEditingController();
   TextEditingController eml = TextEditingController();
@@ -57,363 +60,378 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              ExpansionTile(title: Text('Personal Information',
-                  style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',fontWeight: FontWeight.bold)),
-              backgroundColor: Colors.grey.shade800,
-              childrenPadding: EdgeInsets.all(10),
-              iconColor: Colors.white,
-              collapsedIconColor: Colors.white,
-              textColor: AppDesign().textColor,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10)
-              ),
+        child: LoadingOverlay(
+          isLoading: _isloading,
+          color: Colors.transparent,
+          progressIndicator: Center(child: CircularProgressIndicator(color: Colors.white)),
+          child: SingleChildScrollView(
+            child: Column(
               children: [
-                Form(
-                  key: _globalKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Username',style: TextStyle(color: AppDesign().textColor)),
-                      TextFormField(
-                        controller: usr,
-                        validator: (value){
-                          if(value==null || value.isEmpty){
-                            return 'Username cannot be blank';
-                          }else{
-                            return null;
-                          }
-                        },
-                        onSaved: (value) {
-                          usr.text = value!;
-                        },
-                        decoration: InputDecoration(
-                          fillColor: Colors.white,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          )
-                        ),
-                      ),
-
-                      SizedBox(height: 5),
-
-                      Text('Email Address',style: TextStyle(color: AppDesign().textColor)),
-                      TextFormField(
-                        controller: eml,
-                        validator: (value) {
-                          if(!(value!.contains("@"))){
-                            return 'Invalid email format';
-                          }else{
-                            return null;
-                          }
-                        },
-                        onSaved: (value){
-                          eml.text = value!;
-                        },
-                        decoration: InputDecoration(
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            )
-                        ),
-                      ),
-
-                      SizedBox(height: 5),
-
-                      Text('Change Password',style: TextStyle(color: AppDesign().textColor)),
-                      TextFormField(
-                        controller: pss,
-                        obscureText: !_isVisible,
-                        obscuringCharacter: '*',
-                        validator: (value) {
-                          if(value!.length<8){
-                            return 'Password length should be minimum 8 digits';
-                          }
-                        },
-                        onSaved: (value){
-                          pss.text = value!;
-                        },
-                        decoration: InputDecoration(
-                          suffixIcon: GestureDetector(
-                            onTap: (){
-                              setState(() {
-                                _isVisible = !_isVisible;
-                              });
-                            },
-                              child: _isVisible ? Icon(Icons.visibility,color: Colors.white) : Icon(Icons.visibility_off,color: Colors.white)),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            )
-                        ),
-                      ),
-
-                      SizedBox(height: 5),
-
-                      Container(
-                        width: MediaQuery.of(context).size.width,
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10)
-                        ),
-                        child: ElevatedButton(onPressed: () async{
-                          if(_globalKey.currentState!.validate()){
-                            if((userName == usr.text || email == eml.text || pass == pss.text)){
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Nothing to update")));
-                            }else{
-                              var checkUsr = usr.text;
-                              var checkEmail = eml.text;
-                              var checkPss = pss.text;
-
-                              setState(() {
-                                _isloading = true;
-                              });
-
-                              await DatabaseOptions().updateUserName(userId!, checkUsr);
-                              await DatabaseOptions().updateEmail(userId!, checkEmail);
-                              await DatabaseOptions().updatePassword(userId!, checkPss);
-
-                              await SharedPreferenceHelper().setUsername(checkUsr);
-                              await SharedPreferenceHelper().setEmail(checkEmail);
-                              await SharedPreferenceHelper().setPassword(checkPss);
-
-                              setState(() {
-                                _isloading = false;
-                              });
-
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Changes saved successfully')));
-
-                            }
-                          }
-                        },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppDesign().primaryAccent,
-                            ),
-                            child: Text('Save Changes',style: TextStyle(color: AppDesign().textColor,
-                                fontFamily: 'Roboto',fontWeight: FontWeight.bold,fontSize: 18))),
-                      ),
-                    ],
-                  ),
-                )
-              ]),
-          
-              SizedBox(
-                height: 10,
-              ),
-          
-              ExpansionTile(title: Text('Notification Preferences',
-                  style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',fontWeight: FontWeight.bold)),
-                  backgroundColor: Colors.grey.shade800,
-                  childrenPadding: EdgeInsets.all(10),
-                  iconColor: Colors.white,
-                  collapsedIconColor: Colors.white,
-                  textColor: AppDesign().textColor,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10)
-                  ),
-                  children: [
-                    Column(
+                ExpansionTile(title: Text('Personal Information',
+                    style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',fontWeight: FontWeight.bold)),
+                backgroundColor: Colors.grey.shade800,
+                childrenPadding: EdgeInsets.all(10),
+                iconColor: Colors.white,
+                collapsedIconColor: Colors.white,
+                textColor: AppDesign().textColor,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)
+                ),
+                children: [
+                  Form(
+                    key: _globalKey,
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('New Episode Alerts',style: TextStyle(color: AppDesign().textColor)),
-                                Text("Get the top new episodes alerts first.",style: TextStyle(color: AppDesign().secondaryTextColor))
-                              ],
-                            ),
-          
-                            Expanded(
-                              child: Align(
-                                alignment: Alignment.centerRight,
-                                child: Switch(value: true,
-                                    inactiveTrackColor: Colors.grey.shade500,
-                                    activeTrackColor: AppDesign().primaryAccent,
-                                    onChanged: (value) {
-                              
-                                }),
-                              ),
+                        Text('Username',style: TextStyle(color: AppDesign().textColor)),
+                        TextFormField(
+                          controller: usr,
+                          validator: (value){
+                            if(value==null || value.isEmpty){
+                              return 'Username cannot be blank';
+                            }else{
+                              return null;
+                            }
+                          },
+                          onSaved: (value) {
+                            usr.text = value!;
+                          },
+                          decoration: InputDecoration(
+                            fillColor: Colors.white,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
                             )
-                          ],
+                          ),
                         ),
-          
+
                         SizedBox(height: 5),
-          
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Recommendations Alerts',style: TextStyle(color: AppDesign().textColor)),
-                                Text("Personalized show suggestion.",style: TextStyle(color: AppDesign().secondaryTextColor))
-                              ],
-                            ),
-          
-                            Expanded(
-                              child: Align(
-                                alignment: Alignment.centerRight,
-                                child: Switch(value: true,
-                                    inactiveTrackColor: Colors.grey.shade500,
-                                    activeTrackColor: AppDesign().primaryAccent,
-                                    onChanged: (value) {
-                              
-                                    }),
-                              ),
-                            )
-                          ],
+
+                        Text('Email Address',style: TextStyle(color: AppDesign().textColor)),
+                        TextFormField(
+                          controller: eml,
+                          validator: (value) {
+                            if(!(value!.contains("@"))){
+                              return 'Invalid email format';
+                            }else{
+                              return null;
+                            }
+                          },
+                          onSaved: (value){
+                            eml.text = value!;
+                          },
+                          decoration: InputDecoration(
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              )
+                          ),
                         ),
-          
+
                         SizedBox(height: 5),
-          
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('App Updates & News',style: TextStyle(color: AppDesign().textColor)),
-                                Text("New features,tips, and announcements.",style: TextStyle(color: AppDesign().secondaryTextColor))
-                              ],
-                            ),
-          
-                            Expanded(
-                              child: Align(
-                                alignment: Alignment.centerRight,
-                                child: Switch(value: true,
-                                    inactiveTrackColor: Colors.grey.shade500,
-                                    activeTrackColor: AppDesign().primaryAccent,
-                                    onChanged: (value) {
-                              
-                                    }),
-                              ),
-                            )
-                          ],
+
+                        Text('Change Password',style: TextStyle(color: AppDesign().textColor)),
+                        TextFormField(
+                          controller: pss,
+                          obscureText: !_isVisible,
+                          obscuringCharacter: '*',
+                          validator: (value) {
+                            if(value!.length<8){
+                              return 'Password length should be minimum 8 digits';
+                            }
+                          },
+                          onSaved: (value){
+                            pss.text = value!;
+                          },
+                          decoration: InputDecoration(
+                            suffixIcon: GestureDetector(
+                              onTap: (){
+                                setState(() {
+                                  _isVisible = !_isVisible;
+                                });
+                              },
+                                child: _isVisible ? Icon(Icons.visibility,color: Colors.white) : Icon(Icons.visibility_off,color: Colors.white)),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              )
+                          ),
                         ),
-          
+
+                        SizedBox(height: 5),
+
                         Container(
                           width: MediaQuery.of(context).size.width,
                           decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(10)
                           ),
-                          child: ElevatedButton(onPressed: (){},
+                          child: ElevatedButton(onPressed: () async{
+                            if(_globalKey.currentState!.validate()){
+                              if((userName == usr.text && email == eml.text && pass == pss.text)){
+                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Nothing to update")));
+                              }else{
+                                var checkUsr = usr.text;
+                                var checkEmail = eml.text;
+                                var checkPss = pss.text;
+
+                                setState(() {
+                                  _isloading = true;
+                                });
+
+                                await DatabaseOptions().updateUserName(userId!, checkUsr);
+                                await DatabaseOptions().updateEmail(userId!, checkEmail);
+                                await DatabaseOptions().updatePassword(userId!, checkPss);
+
+                                await SharedPreferenceHelper().setUsername(checkUsr);
+                                await SharedPreferenceHelper().setEmail(checkEmail);
+                                await SharedPreferenceHelper().setPassword(checkPss);
+
+                                var nm = await SharedPreferenceHelper().getUsername();
+                                print(nm);
+
+                                setState(() {
+                                  _isloading = false;
+                                });
+
+                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Changes saved successfully')));
+
+                              }
+                            }
+                          },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppDesign().primaryAccent,
                               ),
-                              child: Text('Save Preferences',style: TextStyle(color: AppDesign().textColor,
+                              child: Text('Save Changes',style: TextStyle(color: AppDesign().textColor,
                                   fontFamily: 'Roboto',fontWeight: FontWeight.bold,fontSize: 18))),
                         ),
                       ],
-                    )
-                  ]),
+                    ),
+                  )
+                ]),
+
+                SizedBox(
+                  height: 10,
+                ),
+
+                ExpansionTile(title: Text('Notification Preferences',
+                    style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',fontWeight: FontWeight.bold)),
+                    backgroundColor: Colors.grey.shade800,
+                    childrenPadding: EdgeInsets.all(10),
+                    iconColor: Colors.white,
+                    collapsedIconColor: Colors.white,
+                    textColor: AppDesign().textColor,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)
+                    ),
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('New Episode Alerts',style: TextStyle(color: AppDesign().textColor)),
+                                  Text("Get the top new episodes alerts first.",style: TextStyle(color: AppDesign().secondaryTextColor))
+                                ],
+                              ),
+
+                              Expanded(
+                                child: Align(
+                                  alignment: Alignment.centerRight,
+                                  child: Switch(value: true,
+                                      inactiveTrackColor: Colors.grey.shade500,
+                                      activeTrackColor: AppDesign().primaryAccent,
+                                      onChanged: (value) {
+
+                                  }),
+                                ),
+                              )
+                            ],
+                          ),
+
+                          SizedBox(height: 5),
+
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Recommendations Alerts',style: TextStyle(color: AppDesign().textColor)),
+                                  Text("Personalized show suggestion.",style: TextStyle(color: AppDesign().secondaryTextColor))
+                                ],
+                              ),
+
+                              Expanded(
+                                child: Align(
+                                  alignment: Alignment.centerRight,
+                                  child: Switch(value: true,
+                                      inactiveTrackColor: Colors.grey.shade500,
+                                      activeTrackColor: AppDesign().primaryAccent,
+                                      onChanged: (value) {
+
+                                      }),
+                                ),
+                              )
+                            ],
+                          ),
+
+                          SizedBox(height: 5),
+
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('App Updates & News',style: TextStyle(color: AppDesign().textColor)),
+                                  Text("New features,tips, and announcements.",style: TextStyle(color: AppDesign().secondaryTextColor))
+                                ],
+                              ),
+
+                              Expanded(
+                                child: Align(
+                                  alignment: Alignment.centerRight,
+                                  child: Switch(value: true,
+                                      inactiveTrackColor: Colors.grey.shade500,
+                                      activeTrackColor: AppDesign().primaryAccent,
+                                      onChanged: (value) {
+
+                                      }),
+                                ),
+                              )
+                            ],
+                          ),
+
+                          Container(
+                            width: MediaQuery.of(context).size.width,
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10)
+                            ),
+                            child: ElevatedButton(onPressed: (){},
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppDesign().primaryAccent,
+                                ),
+                                child: Text('Save Preferences',style: TextStyle(color: AppDesign().textColor,
+                                    fontFamily: 'Roboto',fontWeight: FontWeight.bold,fontSize: 18))),
+                          ),
+                        ],
+                      )
+                    ]),
+
+                  SizedBox(
+                    height: 20,
+                  ),
 
                 SizedBox(
                   height: 20,
                 ),
 
-              SizedBox(
-                height: 20,
-              ),
+               Container(
+                    width: MediaQuery.of(context).size.width,
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(5)
+                    ),
+                    child: ElevatedButton(onPressed: (){
+                      showDialog(context: context, builder: (context) {
+                        return AlertDialog(
+                          title: Text("Are you sure you want to delete account?",style: TextStyle(color: Colors.red)),
+                          content: Text("Once deleted account cannot be restored."),
+                          elevation: 5,
+                          icon: Icon(Icons.warning),
+                          iconColor: Colors.red,
+                          actions: [
+                            TextButton(onPressed: () async{
+                              Navigator.pop(context);
 
-              Form(
-                key: _globalKey,
-                child: Container(
-                  width: MediaQuery.of(context).size.width,
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(5)
-                  ),
-                  child: ElevatedButton(onPressed: (){
-                    showDialog(context: context, builder: (context) {
-                      return AlertDialog(
-                        title: Text("Are you sure you want to delete account?",style: TextStyle(color: Colors.red)),
-                        content: Text("Once deleted account cannot be restored."),
-                        elevation: 5,
-                        icon: Icon(Icons.warning),
-                        iconColor: Colors.red,
-                        actions: [
-                          TextButton(onPressed: () async{
-                            Navigator.pop(context);
-                            showDialog(context: context,
-                                builder: (context) {
-                                  return SimpleDialog(
-                                    elevation: 5,
-                                    title: Text("Confirm your identity?",style: TextStyle(color: Colors.red)),
-                                    backgroundColor: Colors.white,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(5)
-                                    ),
-                                    children: [
-                                      Text("Re-enter your password to confirm identity",style: TextStyle(color: Colors.red)),
-                                      Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: TextFormField(
-                                          controller : confirm,
-                                          decoration: InputDecoration(
-                                            border: OutlineInputBorder(
-                                              borderRadius: BorderRadius.circular(5)
-                                            ),
-                                            focusedBorder: OutlineInputBorder(
-                                              borderRadius: BorderRadius.circular(5),
-                                              borderSide: BorderSide(
-                                                color: Colors.black
-                                              )
-                                            )
-                                          ),
-                                          validator: (value) {
-                                            if(pass!=value){
-                                              return 'Please enter your correct password';
-                                            }else{
-                                              confirmPass = value;
-                                              print(confirmPass);
-                                              return null;
-                                            }
-                                          },
-                                        ),
+                              showDialog(context: context,
+                                  builder: (context) {
+                                    return SimpleDialog(
+                                      elevation: 5,
+                                      insetPadding: EdgeInsets.all(5),
+                                      title: Center(child: Text("Confirm your identity?",style: TextStyle(color: Colors.red))),
+                                      backgroundColor: Colors.white,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(5)
                                       ),
-                                      TextButton(onPressed: () async{
-                                        if(_globalKey.currentState!.validate()){
+                                      children: [
+                                        Center(child: Text("Re-enter your password to confirm identity",style: TextStyle(color: Colors.red))),
+                                        Form(
+                                          key : _deleteglobalKey,
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: TextFormField(
+                                              controller : confirm,
+                                              decoration: InputDecoration(
+                                                border: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.circular(5)
+                                                ),
+                                                focusedBorder: OutlineInputBorder(
+                                                  borderRadius: BorderRadius.circular(5),
+                                                  borderSide: BorderSide(
+                                                    color: Colors.black
+                                                  )
+                                                )
+                                              ),
+                                              validator: (value) {
+                                                if(pass!=value){
+                                                  return 'Please enter your correct password';
+                                                }else{
+                                                  confirmPass = value;
+                                                  print(confirmPass);
+                                                  return null;
+                                                }
+                                              },
+                                            ),
+                                          ),
+                                        ),
+                                        TextButton(onPressed: () async{
+                                          if(_deleteglobalKey.currentState!.validate()){
+                                            Navigator.pop(context);
 
-                                          setState(() {
-                                            _isloading = true;
-                                          });
+                                            setState(() {
+                                              _isloading = true;
+                                            });
 
-                                          var result = await DatabaseOptions().deleteUserAccount(confirmPass!);
+                                            var result = await DatabaseOptions().deleteUserAccount(userId!,confirmPass!);
+                                            print('The returned result $result');
 
-                                          setState(() {
-                                            _isloading = false;
-                                          });
+                                            if (!mounted) return;
 
-                                          if(result == 1){
-                                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User account deleted successfully")));
-                                          }else{
-                                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error deleting user account")));
+                                            setState(() {
+                                              _isloading = false;
+                                            });
+
+                                            if(result == 1){
+                                              // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User account deleted successfully")));
+                                              Navigator.of(context,rootNavigator: true).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => SignUp()), (route) => false);
+                                            }else{
+                                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error deleting user account")));
+                                            }
                                           }
-                                        }
-                                      }, child: Text('OK'))
-                                    ],
-                                  );
-                                });
-                          }, child: Text('Yes')),
-                          TextButton(onPressed: (){
-                            Navigator.pop(context);
-                          }, child: Text('No'))
-                        ],
-                      );
-                    });
-                  },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey.shade800,
-                      ),
-                      child: Text('Delete Account',style: TextStyle(color: Colors.redAccent,
-                          fontFamily: 'Roboto',fontWeight: FontWeight.bold,fontSize: 18))),
-                ),
-              ),
-            ],
+                                        }, child: Text('OK'))
+                                      ],
+                                    );
+                                  });
+                            }, child: Text('Yes')),
+                            TextButton(onPressed: (){
+                              Navigator.pop(context);
+                            }, child: Text('No'))
+                          ],
+                        );
+                      });
+                    },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.grey.shade800,
+                        ),
+                        child: Text('Delete Account',style: TextStyle(color: Colors.redAccent,
+                            fontFamily: 'Roboto',fontWeight: FontWeight.bold,fontSize: 18))),
+                  ),
+              ],
+            ),
           ),
         ),
       ),

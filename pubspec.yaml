@@ -42,6 +42,7 @@ dependencies:
   cloud_firestore: ^6.1.0
   random_string: ^2.3.1
   image_picker: ^1.2.1
+  loading_overlay: ^0.4.0
   shared_preferences: ^2.5.3
   overlay_loader_with_app_icon: ^0.0.4
 

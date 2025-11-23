@@ -432,7 +432,7 @@ class _DetailPageState extends State<DetailPage> {
                                                       style: ElevatedButton.styleFrom(
                                                         backgroundColor: AppDesign().primaryAccent,
                                                       ),
-                                                      child: type == 'movie'  ? Text('Watch full movie',style: TextStyle(color: Colors.white)) : Text('Watch full series',style: TextStyle(color: Colors.white))),
+                                                      child: Icon(Icons.arrow_circle_right,color: Colors.white)),
                                                 ),
                                               )
                                             ],

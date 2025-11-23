@@ -151,7 +151,7 @@ class DatabaseOptions{
     });
   }
 
-  Future<int> deleteUserAccount(String password) async{
+  Future<int> deleteUserAccount(String id,String password) async{
     try{
       User? user = await FirebaseAuth.instance.currentUser;
 
@@ -160,9 +160,10 @@ class DatabaseOptions{
           password: password);
 
       await user.reauthenticateWithCredential(credential);
+      print('The user id is ${user.uid}');
 
       await FirebaseFirestore.instance.collection('users')
-            .doc(user.uid)
+            .doc(id)
             .delete();
 
       await user.delete();

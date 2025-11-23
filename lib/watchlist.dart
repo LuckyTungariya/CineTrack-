@@ -170,7 +170,9 @@ class _WatchListPageState extends State<WatchListPage> {
                               return Center(child: CircularProgressIndicator(color: Colors.white));
                             }else if(snapshot.hasError){
                               return Center(child: Text('Data fetching error'));
-                            }else if(snapshot.hasData){
+                            }else if(!snapshot.data!.exists){
+                              return Center(child: Text("User data does not exists"));
+                            } else if(snapshot.hasData){
                               List watchlist = snapshot.data?['watchlist'] ?? [];
                               if(currentIndex == 0){
                                 userWatchList.clear();

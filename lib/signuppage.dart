@@ -210,8 +210,10 @@ class _SignUpState extends State<SignUp> {
                           var emailValue = email.text;
                           var passValue = password.text;
                           var result = await DatabaseOptions().createUser(emailValue, passValue);
-                          id = '$nameValue${randomAlphaNumeric(5)}';
-                          await DatabaseOptions().addUserDetails(id, nameValue, emailValue, passValue);
+                          if(result == 0){
+                            id = '$nameValue${randomAlphaNumeric(5)}';
+                            await DatabaseOptions().addUserDetails(id, nameValue, emailValue, passValue);
+                          }
 
                           setState(() {
                             _isloading = false;
