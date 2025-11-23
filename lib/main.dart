@@ -5,12 +5,13 @@ import 'package:tmdbmovies/homepage.dart';
 import 'package:tmdbmovies/maintohandlebottomnav.dart';
 import 'package:tmdbmovies/profilepage.dart';
 import 'package:tmdbmovies/signuppage.dart';
+import 'package:tmdbmovies/splashscreen.dart';
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   runApp(MaterialApp(
-    home: SignUp(),
+    home: SplashScreen(),
     debugShowCheckedModeBanner: false,
   ));
 }

@@ -16,6 +16,7 @@ class SignIn extends StatefulWidget {
 
 class _SignInState extends State<SignIn> {
   bool _isloading = false;
+  bool _isVisible = false;
   final _globalkey = GlobalKey<FormState>();
   TextEditingController email = TextEditingController();
   TextEditingController password = TextEditingController();
@@ -26,7 +27,7 @@ class _SignInState extends State<SignIn> {
     var w = MediaQuery.of(context).size.width;
 
     return OverlayLoaderWithAppIcon(
-      appIcon: Icon(Icons.add_chart_sharp,color: Colors.black),
+      appIcon: ClipRRect(borderRadius: BorderRadius.circular(20),child: Image.asset("assets/usedIcons/onlyappico.png")),
       isLoading: _isloading,
       overlayOpacity: 0.5,
       overlayBackgroundColor: Colors.black,
@@ -38,7 +39,9 @@ class _SignInState extends State<SignIn> {
           height: double.infinity,
           width: double.infinity,
           decoration: BoxDecoration(
-              color: AppDesign().bgColor
+              image: DecorationImage(image: AssetImage("assets/usedIcons/appbg.jpg"),
+                  fit: BoxFit.cover
+                  ,opacity: 0.4)
           ),
           child: SingleChildScrollView(
             child: Padding(
@@ -48,8 +51,8 @@ class _SignInState extends State<SignIn> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text("Welcome Back!",style: TextStyle(color: AppDesign().textColor,fontSize: 26,fontWeight: FontWeight.bold,fontFamily: 'Roboto')),
-                    Text("Sign in to access trending shows \n  movies,Tv Serials and Cinemas.",style: TextStyle(color: AppDesign().textColor,fontSize: 14,fontStyle: FontStyle.normal,fontFamily: 'Roboto')),
+                    Text("Welcome Back!",style: TextStyle(color: AppDesign().bgColor,fontSize: 26,fontWeight: FontWeight.bold,fontFamily: 'Roboto')),
+                    Text("Sign in to access trending shows \n  movies,Tv Serials and Cinemas.",style: TextStyle(color: AppDesign().bgColor,fontSize: 14,fontWeight: FontWeight.bold,fontFamily: 'Roboto')),
 
                     SizedBox(
                       height: 30,
@@ -62,10 +65,11 @@ class _SignInState extends State<SignIn> {
                     Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _returnText("Email*",Colors.white,FontStyle.normal),
+                          _returnText("Email*",Colors.black),
                           TextFormField(
                             controller: email,
-                            style: TextStyle(color: Colors.white),
+                            cursorColor: Colors.black,
+                            style: TextStyle(color: Colors.black),
                             validator: (value){
                               if(!(value!.contains('@'))){
                                 return 'Invalid email format';
@@ -81,13 +85,13 @@ class _SignInState extends State<SignIn> {
                                 enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10),
                                     borderSide: BorderSide(
-                                        color : Colors.white
+                                        color : Colors.black
                                     )
                                 ),
                                 border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10),
                                     borderSide: BorderSide(
-                                      color: Colors.white,
+                                      color: Colors.black,
                                     )
                                 ),
                                 focusedBorder: OutlineInputBorder(
@@ -108,10 +112,13 @@ class _SignInState extends State<SignIn> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _returnText("Password*",Colors.white,FontStyle.normal),
+                        _returnText("Password*",Colors.black),
                         TextFormField(
                           controller: password,
-                          style: TextStyle(color: Colors.white),
+                          cursorColor: Colors.black,
+                          obscuringCharacter: "*",
+                          obscureText: !_isVisible,
+                          style: TextStyle(color: Colors.black),
                           validator: (value) {
                             if(value!.length<8){
                               return 'Password should be minimum of 8 digit';
@@ -124,16 +131,23 @@ class _SignInState extends State<SignIn> {
                           },
                           decoration: InputDecoration(
                             hintText: 'Enter your password',
+                              suffixIcon: GestureDetector(
+                                onTap: (){
+                                  setState(() {
+                                    _isVisible = !_isVisible;
+                                  });
+                                },
+                                  child: _isVisible ? Icon(Icons.visibility,color: Colors.black) : Icon(Icons.visibility_off,color: Colors.black)),
                               enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
                                   borderSide: BorderSide(
-                                      color : Colors.white
+                                      color : Colors.black
                                   )
                               ),
                               border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
                                   borderSide: BorderSide(
-                                    color: Colors.white,
+                                    color: Colors.black,
                                   )
                               ),
                               focusedBorder: OutlineInputBorder(
@@ -157,7 +171,7 @@ class _SignInState extends State<SignIn> {
                       },
                       child: Container(
                         alignment: Alignment.centerRight,
-                        child: Text("Forgot Password?",style: TextStyle(color: AppDesign().textColor,fontSize: 18,fontFamily: 'Roboto',decoration: TextDecoration.underline,decorationColor: Colors.white)),
+                        child: Text("Forgot Password?",style: TextStyle(color: AppDesign().bgColor,fontSize: 18,fontFamily: 'Roboto',decoration: TextDecoration.underline,decorationColor: Colors.black)),
                       ),
                     ),
 
@@ -196,6 +210,7 @@ class _SignInState extends State<SignIn> {
                             await SharedPreferenceHelper().setEmail(fetchedEml);
                             await SharedPreferenceHelper().setPassword(fetchedPss);
                             await SharedPreferenceHelper().setUserProfile(fetchedUserProfile);
+                            await SharedPreferenceHelper().setLoginState(true);
                             var test = await SharedPreferenceHelper().getUsername();
                             print('Username after login $test');
 
@@ -242,10 +257,10 @@ class _SignInState extends State<SignIn> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             spacing: 10,
                             children: [
-                              Image.asset("assets/usedIcons/pencil.png",color: Colors.white,height: 20,width: 20),
+                              Image.asset("assets/usedIcons/pencil.png",color: Colors.black,height: 20,width: 20),
                               Text(
                                 "Sign In",
-                                style: TextStyle(color: AppDesign().textColor,fontSize: 20,fontFamily: 'Roboto'),
+                                style: TextStyle(color: AppDesign().bgColor,fontSize: 20,fontFamily: 'Roboto'),
                               ),
                             ],
                           )),
@@ -256,13 +271,13 @@ class _SignInState extends State<SignIn> {
                     ),
 
                     Divider(
-                      color: Colors.white,
+                      color: Colors.black,
                     ),
 
                     TextButton(onPressed: (){
                       Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => SignUp()));
                     }, child: Text("Don't have an account? Sign Up",
-                        style: TextStyle(color: AppDesign().primaryAccent,fontSize: 18,fontFamily: 'Roboto')))
+                        style: TextStyle(color: AppDesign().bgColor,fontSize: 18,fontFamily: 'Roboto',fontWeight: FontWeight.bold)))
                   ],
                 ),
               ),
@@ -274,8 +289,8 @@ class _SignInState extends State<SignIn> {
   }
 }
 
-Widget _returnText(String text,Color color,FontStyle fontStyle){
-  return Text(text,style: TextStyle(color: color,fontFamily: 'Roboto'));
+Widget _returnText(String text,Color color){
+  return Text(text,style: TextStyle(color: color,fontFamily: 'Roboto',fontWeight: FontWeight.bold));
 }
 
 Widget _returnTextField(TextEditingController controller){

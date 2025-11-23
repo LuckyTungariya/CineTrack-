@@ -6,6 +6,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:tmdbmovies/detailpage.dart';
 import 'package:animated_toggle_switch/animated_toggle_switch.dart';
 import 'package:tmdbmovies/profilepage.dart';
+import 'package:tmdbmovies/sharedprefs.dart';
 import 'package:tmdbmovies/watchlist.dart';
 import 'Apiservice.dart';
 
@@ -17,6 +18,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  String? usr;
   final List<String> trendingHints = [
     'Search anything',
     'Search popular people',
@@ -44,6 +46,19 @@ class _HomePageState extends State<HomePage> {
   final baseUrl = 'https://image.tmdb.org/t/p/w500';
   final defaultImageUrl = 'https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png';
 
+  @override
+  void initState() {
+    super.initState();
+    getUserName();
+  }
+
+  Future<void> getUserName() async{
+    var nm = await SharedPreferenceHelper().getUsername();
+    usr = nm!;
+    setState(() {
+
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +68,7 @@ class _HomePageState extends State<HomePage> {
         leading: Icon(Icons.add_chart_sharp,color: Colors.white),
         backgroundColor: AppDesign().bgColor,
         titleSpacing: 2,
-        title: Text("CineTrack",style: TextStyle(fontFamily: 'Roboto',fontSize: 20,color: AppDesign().textColor)),
+        title: Text("Welcome $usr",style: TextStyle(fontFamily: 'Roboto',fontSize: 18,fontWeight: FontWeight.bold,color: AppDesign().textColor)),
       ),
       body: Padding(
         padding: const EdgeInsets.only(top: 0),

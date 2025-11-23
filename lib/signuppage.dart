@@ -15,6 +15,7 @@ class SignUp extends StatefulWidget {
 class _SignUpState extends State<SignUp> {
   late String id;
   bool _isloading = false;
+  bool _isVisible = false;
   final _globalkey = GlobalKey<FormState>();
   TextEditingController name = TextEditingController();
   TextEditingController email = TextEditingController();
@@ -27,7 +28,9 @@ class _SignUpState extends State<SignUp> {
 
     return OverlayLoaderWithAppIcon(
       borderRadius: 8,
-      appIcon: Icon(Icons.add_chart_sharp,color: Colors.black),
+      appIcon: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+          child: Image.asset("assets/usedIcons/onlyappico.png")),
       circularProgressColor: Colors.black,
       appIconSize: 30,
       overlayBackgroundColor: Colors.black,
@@ -38,7 +41,9 @@ class _SignUpState extends State<SignUp> {
           height: double.infinity,
           width: double.infinity,
           decoration: BoxDecoration(
-            color: AppDesign().bgColor
+            image: DecorationImage(image: AssetImage("assets/usedIcons/appbg.jpg"),
+                fit: BoxFit.cover
+                ,opacity: 0.4)
           ),
           child: SingleChildScrollView(
             child: Padding(
@@ -48,8 +53,8 @@ class _SignUpState extends State<SignUp> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text("Create Your Account?",style: TextStyle(color: AppDesign().textColor,fontSize: 26,fontWeight: FontWeight.bold,fontFamily: 'Roboto')),
-                    Text("Create your account to explore exciting \n       movies,Tv Serials and Cinemas.",style: TextStyle(color: AppDesign().textColor,fontSize: 16,fontStyle: FontStyle.normal,fontFamily: 'Roboto')),
+                    Text("Create Your Account?",style: TextStyle(color: AppDesign().bgColor,fontSize: 26,fontWeight: FontWeight.bold,fontFamily: 'Roboto')),
+                    Text("Create your account to explore exciting \n       movies,Tv Serials and Cinemas.",style: TextStyle(color: AppDesign().bgColor,fontSize: 16,fontWeight: FontWeight.bold,fontFamily: 'Roboto')),
 
                     SizedBox(
                       height: 30,
@@ -58,10 +63,11 @@ class _SignUpState extends State<SignUp> {
                      Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _returnText("Full Name*",Colors.white,FontStyle.normal),
+                          _returnText("Full Name*",Colors.black),
                           TextFormField(
                             controller: name,
-                            style: TextStyle(color: Colors.white),
+                            cursorColor: Colors.black,
+                            style: TextStyle(color: Colors.black),
                             validator: (value) {
                               if(value==null || value==''){
                                 return 'Please provide your name';
@@ -77,7 +83,7 @@ class _SignUpState extends State<SignUp> {
                                 enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10),
                                     borderSide: BorderSide(
-                                        color : Colors.white
+                                        color : Colors.black
                                     )
                                 ),
                                 border: OutlineInputBorder(
@@ -104,10 +110,11 @@ class _SignUpState extends State<SignUp> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _returnText("Email*",Colors.white,FontStyle.normal),
+                        _returnText("Email*",Colors.black),
                         TextFormField(
                           controller: email,
-                          style: TextStyle(color: Colors.white),
+                          cursorColor: Colors.black,
+                          style: TextStyle(color: Colors.black),
                           validator: (value) {
                             if(!(value!.contains('@'))){
                               return 'Invalid email format';
@@ -123,7 +130,7 @@ class _SignUpState extends State<SignUp> {
                               enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
                                   borderSide: BorderSide(
-                                      color : Colors.white
+                                      color : Colors.black
                                   )
                               ),
                               border: OutlineInputBorder(
@@ -150,10 +157,13 @@ class _SignUpState extends State<SignUp> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _returnText("Password*",Colors.white,FontStyle.normal),
+                        _returnText("Password*",Colors.black),
                         TextFormField(
                           controller: password,
-                          style: TextStyle(color: Colors.white),
+                          cursorColor: Colors.black,
+                          obscureText: !_isVisible,
+                          obscuringCharacter: "*",
+                          style: TextStyle(color: Colors.black),
                           validator: (value) {
                             if(value!.length<8 || value.isEmpty){
                               return 'Password should be of minimum eight digit';
@@ -166,16 +176,23 @@ class _SignUpState extends State<SignUp> {
                           },
                           decoration: InputDecoration(
                             hintText: 'Enter your password',
+                              suffixIcon: GestureDetector(
+                                onTap: (){
+                                  setState(() {
+                                    _isVisible = !_isVisible;
+                                  });
+                                },
+                                  child: _isVisible ? Icon(Icons.visibility,color: Colors.black) : Icon(Icons.visibility_off,color: Colors.black)),
                               enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
                                   borderSide: BorderSide(
-                                      color : Colors.white
+                                      color : Colors.black
                                   )
                               ),
                               border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
                                   borderSide: BorderSide(
-                                    color: Colors.white,
+                                    color: Colors.black,
                                   )
                               ),
                               focusedBorder: OutlineInputBorder(
@@ -244,10 +261,10 @@ class _SignUpState extends State<SignUp> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             spacing: 10,
                             children: [
-                              Image.asset("assets/usedIcons/pencil.png",color: Colors.white,height: 20,width: 20),
+                              Image.asset("assets/usedIcons/pencil.png",color: Colors.black,height: 20,width: 20),
                               Text(
                                 "Sign Up",
-                                style: TextStyle(color: AppDesign().textColor,fontSize: 20,fontFamily: 'Roboto'),
+                                style: TextStyle(color: AppDesign().bgColor,fontSize: 20,fontFamily: 'Roboto'),
                               ),
                             ],
                           )),
@@ -258,14 +275,14 @@ class _SignUpState extends State<SignUp> {
                     ),
 
                     Divider(
-                      color: Colors.white,
+                      color: Colors.black,
                     ),
 
                     TextButton(onPressed: (){
 
                       Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => SignIn()));
                     }, child: Text("Already have an account?Sign In",
-                        style: TextStyle(color: AppDesign().primaryAccent,fontSize: 18,fontFamily: 'Roboto')))
+                        style: TextStyle(color: AppDesign().bgColor,fontSize: 18,fontFamily: 'Roboto',fontWeight: FontWeight.bold)))
                   ],
                 ),
               ),
@@ -277,6 +294,6 @@ class _SignUpState extends State<SignUp> {
   }
 }
 
-Widget _returnText(String text,Color color,FontStyle fontStyle){
-  return Text(text,style: TextStyle(color: color,fontFamily: 'Roboto'));
+Widget _returnText(String text,Color color){
+  return Text(text,style: TextStyle(color: color,fontFamily: 'Roboto',fontWeight: FontWeight.bold));
 }

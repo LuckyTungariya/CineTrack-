@@ -7,6 +7,7 @@ class SharedPreferenceHelper{
   final String emailKey = 'EMAILKEY';
   final String passwordKey = 'PASSWORDKEY';
   final String profileKey = 'PROFILEKEY';
+  final String loginKey = "LOGINKEY";
 
   Future<void> setUsername(String name) async{
     final prefs = await SharedPreferences.getInstance();
@@ -61,6 +62,17 @@ class SharedPreferenceHelper{
     final prefs = await SharedPreferences.getInstance();
     var profile = prefs.getString(profileKey);
     return profile;
+  }
+
+  Future<void> setLoginState(bool value) async{
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setBool(loginKey, value);
+  }
+
+  Future<bool?> getLoginState() async{
+    final prefs = await SharedPreferences.getInstance();
+    var state = prefs.getBool(loginKey);
+    return state;
   }
 
 }
