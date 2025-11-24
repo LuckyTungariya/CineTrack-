@@ -1,7 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
-import 'package:random_string/random_string.dart';
 
 class DatabaseOptions{
   Future<int> createUser(String email,String password) async{
@@ -51,7 +49,8 @@ class DatabaseOptions{
         'email' : email,
         'password' : pss,
         'profilePath' : null,
-        'watchlist' : []
+        'watchlist' : [],
+        'addedMedia' : []
       }
     );
   }
@@ -173,6 +172,36 @@ class DatabaseOptions{
       print('Someting went wrong deleting user account');
       return 2;
     }
+  }
+
+  Future<void> addToMedia(String userId,String id) async{
+    final snapshot = await FirebaseFirestore.instance.collection('users')
+                            .doc(userId)
+                            .get();
+
+    List addedMediaList = snapshot.data()?['addedMedia'] ?? [];
+    addedMediaList.add(id.toString());
+
+    await FirebaseFirestore.instance.collection('users')
+        .doc(userId)
+        .update({
+      'addedMedia' : addedMediaList
+    });
+  }
+
+  Future<void> removeToMedia(String userId,String id) async{
+    final snapshot = await FirebaseFirestore.instance.collection('users')
+        .doc(userId)
+        .get();
+
+    List addedMediaList = snapshot.data()?['addedMedia'] ?? [];
+    addedMediaList.remove(id.toString());
+
+    await FirebaseFirestore.instance.collection('users')
+        .doc(userId)
+        .update({
+      'addedMedia' : addedMediaList
+    });
   }
 
 }

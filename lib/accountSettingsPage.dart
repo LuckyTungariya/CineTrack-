@@ -1,10 +1,9 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:loading_overlay/loading_overlay.dart';
 import 'package:tmdbmovies/Databasemethods.dart';
 import 'package:tmdbmovies/appdesign.dart';
 import 'package:tmdbmovies/sharedprefs.dart';
 import 'package:tmdbmovies/signuppage.dart';
-import 'package:loading_overlay/loading_overlay.dart';
 
 class AccountSettingsPage extends StatefulWidget {
   const AccountSettingsPage({super.key});
@@ -396,21 +395,16 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                                               _isloading = true;
                                             });
 
-                                            var result = await DatabaseOptions().deleteUserAccount(userId!,confirmPass!);
-                                            print('The returned result $result');
-
-                                            if (!mounted) return;
+                                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User account deleted successfully")));
+                                            Navigator.of(context,rootNavigator: true).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => SignUp()), (route) => false);
 
                                             setState(() {
                                               _isloading = false;
                                             });
 
-                                            if(result == 1){
-                                              // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User account deleted successfully")));
-                                              Navigator.of(context,rootNavigator: true).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => SignUp()), (route) => false);
-                                            }else{
-                                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error deleting user account")));
-                                            }
+                                            var result = await DatabaseOptions().deleteUserAccount(userId!,confirmPass!);
+                                            print('The returned result $result');
+
                                           }
                                         }, child: Text('OK'))
                                       ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:tmdbmovies/Apiservice.dart';
 import 'package:tmdbmovies/Databasemethods.dart';
 import 'package:tmdbmovies/allseasons.dart';
@@ -21,6 +22,7 @@ class _DetailPageState extends State<DetailPage> {
   late String? userId;
   bool isAdded = false;
   bool isloading = false;
+  List<String>? addedMedia;
   Map<dynamic,dynamic> indiaWatchProviders = {};
   Map<dynamic,dynamic> usWatchProviders = {};
   Map<dynamic,dynamic> watchProviders = {};
@@ -38,16 +40,34 @@ class _DetailPageState extends State<DetailPage> {
   void initState() {
     super.initState();
     getUserId();
+    getMediaList();
     isVideoPlaying = false;
     if(type == 'person'){
       detailsUrl = ApiService().fetchDetails('https://api.themoviedb.org/3/$type/$id?language=en-US&append_to_response=images,movie_credits,tv_credits');
     }else{
       detailsUrl = ApiService().fetchDetails('https://api.themoviedb.org/3/$type/$id?language=en-US&append_to_response=videos,credits,similar,watch/providers');
     }
+    if(addedMedia!=null){
+      for(var item in addedMedia!){
+        if(id.toString() == item){
+          setState(() {
+            isAdded = true;
+          });
+          break;
+        }
+      }
+    }
   }
   
   void getUserId() async{
     userId = await SharedPreferenceHelper().getUserId();
+    setState(() {
+
+    });
+  }
+
+  Future<void> getMediaList() async{
+    addedMedia = await SharedPreferenceHelper().getMedia();
     setState(() {
 
     });
@@ -62,11 +82,14 @@ class _DetailPageState extends State<DetailPage> {
           future: detailsUrl,
           builder: (context, snapshot) {
             if(snapshot.connectionState == ConnectionState.waiting){
-              return Center(
-                child: CircularProgressIndicator(
-                  color: Colors.black,
-                ),
-              );
+              return Shimmer.fromColors(
+                  baseColor: Colors.grey.shade900,
+                  highlightColor: Colors.grey.shade800,
+                  child: Container(
+                    decoration: BoxDecoration(
+                        color: Colors.grey.shade900,
+                    ),
+                  ));
             }else if(snapshot.hasError){
               return Text("Error fetching the content");
             }else if(snapshot.hasData){
@@ -221,11 +244,25 @@ class _DetailPageState extends State<DetailPage> {
                                         setState(() {
                                           isAdded = !isAdded;
                                         });
-                                        print('User id is $userId');
+
                                         setState(() {
                                           isloading = true;
                                         });
-                                        isAdded ? await DatabaseOptions().addToWatchlist(userId!,id.toString(),title,type,posterPath) : await DatabaseOptions().removeFromWatchlist(userId!, id.toString(), type);
+
+                                        if(isAdded == true){
+                                          await DatabaseOptions().addToWatchlist(userId!,id.toString(),title,type,posterPath);
+                                          await DatabaseOptions().addToMedia(userId!, id.toString());
+
+                                          addedMedia!.add(id.toString());
+                                          await SharedPreferenceHelper().setMedia(addedMedia!);
+                                        }else{
+                                          await DatabaseOptions().removeFromWatchlist(userId!, id.toString(), type);
+                                          await DatabaseOptions().removeToMedia(userId!, id.toString());
+
+                                          addedMedia!.remove(id.toString());
+                                          await SharedPreferenceHelper().setMedia(addedMedia!);
+                                        }
+
                                         setState(() {
                                           isloading = false;
                                         });

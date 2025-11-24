@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tmdbmovies/Apiservice.dart';
 import 'package:tmdbmovies/appdesign.dart';
-import 'package:tmdbmovies/detailpage.dart';
 import 'package:tmdbmovies/singleepisode.dart';
 
 class AllSeasonEpisodes extends StatefulWidget {

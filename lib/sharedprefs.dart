@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SharedPreferenceHelper{
@@ -8,6 +7,7 @@ class SharedPreferenceHelper{
   final String passwordKey = 'PASSWORDKEY';
   final String profileKey = 'PROFILEKEY';
   final String loginKey = "LOGINKEY";
+  final String addedMediaKey = "ADDEDMEDIAKEY";
 
   Future<void> setUsername(String name) async{
     final prefs = await SharedPreferences.getInstance();
@@ -75,4 +75,14 @@ class SharedPreferenceHelper{
     return state;
   }
 
+  Future<void> setMedia(List<String> media) async{
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setStringList(addedMediaKey, media);
+  }
+
+  Future<List<String>?> getMedia() async{
+    final prefs = await SharedPreferences.getInstance();
+    var result = prefs.getStringList(addedMediaKey);
+    return result;
+  }
 }

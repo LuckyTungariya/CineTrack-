@@ -1,13 +1,11 @@
 import 'dart:async';
-
+import 'package:animated_toggle_switch/animated_toggle_switch.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:tmdbmovies/appdesign.dart';
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:tmdbmovies/detailpage.dart';
-import 'package:animated_toggle_switch/animated_toggle_switch.dart';
-import 'package:tmdbmovies/profilepage.dart';
 import 'package:tmdbmovies/sharedprefs.dart';
-import 'package:tmdbmovies/watchlist.dart';
+import 'package:shimmer/shimmer.dart';
 import 'Apiservice.dart';
 
 class HomePage extends StatefulWidget {
@@ -65,8 +63,8 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       backgroundColor: AppDesign().bgColor,
       appBar: AppBar(
-        leading: Icon(Icons.add_chart_sharp,color: Colors.white),
-        backgroundColor: AppDesign().bgColor,
+        leading: ClipOval(child: Image.asset("assets/usedIcons/onlyappico.png")),
+        backgroundColor: Colors.black,
         titleSpacing: 2,
         title: Text("Welcome $usr",style: TextStyle(fontFamily: 'Roboto',fontSize: 18,fontWeight: FontWeight.bold,color: AppDesign().textColor)),
       ),
@@ -306,7 +304,26 @@ class _HomePageState extends State<HomePage> {
     return FutureBuilder(future: futureData,
         builder: (context, snapshot) {
           if(snapshot.connectionState == ConnectionState.waiting){
-            return Center(child: CircularProgressIndicator(color: Colors.white));
+            return AspectRatio(
+              aspectRatio: 16/9,
+              child: Shimmer.fromColors(
+                  baseColor: Colors.grey.shade900,
+                  highlightColor: Colors.grey.shade800,
+                  child: Container(
+                    margin: EdgeInsets.all(15),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade900,
+                      borderRadius: BorderRadius.circular(10)
+                    ),
+                    child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                      child: Container(
+                        color: Colors.grey.shade900,
+                      ),
+                    ),
+                  )),
+            );
+
           }else if(snapshot.hasError){
             return Text("Data fetching error");
           }else if(snapshot.hasData){
@@ -407,7 +424,25 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildSearchResults(){
     if(_isloading){
-      return Center(child: CircularProgressIndicator(color: Colors.white));
+      return AspectRatio(
+        aspectRatio: 16/9,
+        child: Shimmer.fromColors(
+            baseColor: Colors.grey.shade900,
+            highlightColor: Colors.grey.shade800,
+            child: Container(
+              margin: EdgeInsets.all(15),
+              decoration: BoxDecoration(
+                  color: Colors.grey.shade900,
+                  borderRadius: BorderRadius.circular(10)
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: Container(
+                  color: Colors.grey.shade900,
+                ),
+              ),
+            )),
+      );
     }
 
     if(searchResults.isEmpty){

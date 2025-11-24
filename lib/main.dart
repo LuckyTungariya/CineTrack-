@@ -1,10 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:tmdbmovies/detailpage.dart';
-import 'package:tmdbmovies/homepage.dart';
-import 'package:tmdbmovies/maintohandlebottomnav.dart';
-import 'package:tmdbmovies/profilepage.dart';
-import 'package:tmdbmovies/signuppage.dart';
 import 'package:tmdbmovies/splashscreen.dart';
 
 void main() async{

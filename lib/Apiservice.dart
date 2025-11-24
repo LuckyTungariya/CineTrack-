@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:share_plus/share_plus.dart';
 
 class ApiService{
   // final _apikey = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI0YjM1ODZmMTgyNzU3NTBkNGJmZWFjOGZmYTg4YmZhZCIsIm5iZiI6MTc2MTY1NTk5Mi4xODEsInN1YiI6IjY5MDBiY2I4MDc1MzU1YjQyMWMzZTBmYyIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.DSsFTszvwMgSsru7enAQQYhGdvtPdIHfQS_VZTGKo1U';
@@ -66,6 +68,18 @@ class ApiService{
     } else {
       print("Failed to upload to Pinata: ${response.statusCode}");
       return null;
+    }
+  }
+
+  Future<void> shareApp(BuildContext context) async{
+    final params = ShareParams(
+      title: "Download the CineTrack app now!!",
+      text: "Explore trending movies,tv shows manage watchlist, profile.",
+    );
+
+    final result = await SharePlus.instance.share(params);
+    if(result.status == ShareResultStatus.success){
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Thankyour for sharing CineTrack")));
     }
   }
 

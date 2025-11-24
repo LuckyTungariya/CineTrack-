@@ -1,13 +1,11 @@
+import 'package:anim_search_bar/anim_search_bar.dart';
 import 'package:animated_toggle_switch/animated_toggle_switch.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:tmdbmovies/Databasemethods.dart';
 import 'package:tmdbmovies/appdesign.dart';
 import 'package:tmdbmovies/detailpage.dart';
-import 'package:tmdbmovies/profilepage.dart';
-import 'package:anim_search_bar/anim_search_bar.dart';
 import 'package:tmdbmovies/sharedprefs.dart';
-import 'homepage.dart';
 
 class WatchListPage extends StatefulWidget {
   const WatchListPage({super.key});

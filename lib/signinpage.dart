@@ -184,65 +184,76 @@ class _SignInState extends State<SignIn> {
                       width: w,
                       child: ElevatedButton(onPressed: () async{
                         if(_globalkey.currentState!.validate()){
-                          setState(() {
-                            _isloading = true;
-                          });
-
-                          var emailValue = email.text;
-                          var passValue = password.text;
-                          var result = await DatabaseOptions().checkUser(emailValue, passValue);
-
-                          if(result == 0){
-                            var id = await DatabaseOptions().fetchUserId(email.text);
-                            var userDetails = await DatabaseOptions().fetchUserDetails(id!);
-                            var fetchedId = userDetails['id'];
-                            var fetchedUsr = userDetails['username'];
-                            var fetchedEml = userDetails['email'];
-                            var fetchedPss = userDetails['password'];
-                            var fetchedUserProfile = userDetails['profilePath'] ?? "";
-                            print('Id is $fetchedId');
-                            print('Username is $fetchedUsr');
-                            print('Email is $fetchedEml');
-                            print('Password is $fetchedPss');
-                            print('User profile is $fetchedUserProfile');
-                            await SharedPreferenceHelper().setUserId(fetchedId);
-                            await SharedPreferenceHelper().setUsername(fetchedUsr);
-                            await SharedPreferenceHelper().setEmail(fetchedEml);
-                            await SharedPreferenceHelper().setPassword(fetchedPss);
-                            await SharedPreferenceHelper().setUserProfile(fetchedUserProfile);
-                            await SharedPreferenceHelper().setLoginState(true);
-                            var test = await SharedPreferenceHelper().getUsername();
-                            print('Username after login $test');
-
+                          try{
                             setState(() {
-                              _isloading = false;
+                              _isloading = true;
                             });
 
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('User Login successful')));
-                            Navigator.pushAndRemoveUntil(context,
-                                MaterialPageRoute(builder: (context) => MainContainerScreen()),
-                                    (route) => false);
+                            var emailValue = email.text;
+                            var passValue = password.text;
+                            var result = await DatabaseOptions().checkUser(emailValue, passValue);
 
-                          }else if(result == 1){
+                            if(result == 0){
+                              var id = await DatabaseOptions().fetchUserId(email.text);
+                              var userDetails = await DatabaseOptions().fetchUserDetails(id!);
+                              var fetchedId = userDetails['id'];
+                              var fetchedUsr = userDetails['username'];
+                              var fetchedEml = userDetails['email'];
+                              var fetchedPss = userDetails['password'];
+                              var fetchedUserProfile = userDetails['profilePath'] ?? "";
+                              var fetchedMediaList = List<String>.from(userDetails['addedMedia'] ?? []);
+                              print('Id is $fetchedId');
+                              print('Username is $fetchedUsr');
+                              print('Email is $fetchedEml');
+                              print('Password is $fetchedPss');
+                              print('User profile is $fetchedUserProfile');
+                              print('Media List is $fetchedMediaList');
+                              await SharedPreferenceHelper().setUserId(fetchedId);
+                              await SharedPreferenceHelper().setUsername(fetchedUsr);
+                              await SharedPreferenceHelper().setEmail(fetchedEml);
+                              await SharedPreferenceHelper().setPassword(fetchedPss);
+                              await SharedPreferenceHelper().setUserProfile(fetchedUserProfile);
+                              await SharedPreferenceHelper().setMedia(fetchedMediaList);
+                              await SharedPreferenceHelper().setLoginState(true);
+                              var test = await SharedPreferenceHelper().getUsername();
+                              print('Username after login $test');
+
+                              setState(() {
+                                _isloading = false;
+                              });
+
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('User Login successful')));
+                              Navigator.pushAndRemoveUntil(context,
+                                  MaterialPageRoute(builder: (context) => MainContainerScreen()),
+                                      (route) => false);
+
+                            }else if(result == 1){
+                              setState(() {
+                                _isloading = false;
+                              });
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Invalid email provided')));
+                            }else if(result == 2){
+                              setState(() {
+                                _isloading = false;
+                              });
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('User not found please login')));
+                            }else if(result == 3){
+                              setState(() {
+                                _isloading = false;
+                              });
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Invalid password provided')));
+                            }else{
+                              setState(() {
+                                _isloading = false;
+                              });
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Some unknown exception')));
+                            }
+                          }catch (e){
                             setState(() {
                               _isloading = false;
+                              print("Error is $e");
                             });
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Invalid email provided')));
-                          }else if(result == 2){
-                            setState(() {
-                              _isloading = false;
-                            });
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('User not found please login')));
-                          }else if(result == 3){
-                            setState(() {
-                              _isloading = false;
-                            });
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Invalid password provided')));
-                          }else{
-                            setState(() {
-                              _isloading = false;
-                            });
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Some unknown exception')));
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Exception $e'),duration: Duration(seconds: 5),));
                           }
                         }
                       },

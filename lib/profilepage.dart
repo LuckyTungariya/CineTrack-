@@ -1,19 +1,14 @@
-import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:loading_overlay/loading_overlay.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tmdbmovies/Apiservice.dart';
-import 'package:tmdbmovies/Databasemethods.dart';
 import 'package:tmdbmovies/accountSettingsPage.dart';
 import 'package:tmdbmovies/appdesign.dart';
 import 'package:tmdbmovies/sharedprefs.dart';
 import 'package:tmdbmovies/signinpage.dart';
-import 'package:tmdbmovies/watchlist.dart';
-import 'package:image_picker/image_picker.dart';
-import 'homepage.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -182,8 +177,8 @@ class _ProfilePageState extends State<ProfilePage> {
                     borderRadius: BorderRadius.circular(10)
                 ),
                 child: ListTile(
-                    onTap: (){
-
+                    onTap: () async{
+                      await ApiService().shareApp(context);
                     },
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10)
