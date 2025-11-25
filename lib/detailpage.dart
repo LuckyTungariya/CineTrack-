@@ -47,16 +47,6 @@ class _DetailPageState extends State<DetailPage> {
     }else{
       detailsUrl = ApiService().fetchDetails('https://api.themoviedb.org/3/$type/$id?language=en-US&append_to_response=videos,credits,similar,watch/providers');
     }
-    if(addedMedia!=null){
-      for(var item in addedMedia!){
-        if(id.toString() == item){
-          setState(() {
-            isAdded = true;
-          });
-          break;
-        }
-      }
-    }
   }
   
   void getUserId() async{
@@ -68,9 +58,19 @@ class _DetailPageState extends State<DetailPage> {
 
   Future<void> getMediaList() async{
     addedMedia = await SharedPreferenceHelper().getMedia();
-    setState(() {
+    print("Fetched addedMedia list $addedMedia");
+    setState(() {});
 
-    });
+    if(addedMedia!=null && addedMedia!.isNotEmpty){
+      for(var item in addedMedia!){
+        if(id.toString() == item){
+          setState(() {
+            isAdded = true;
+          });
+          break;
+        }
+      }
+    }
   }
 
   @override
@@ -254,12 +254,14 @@ class _DetailPageState extends State<DetailPage> {
                                           await DatabaseOptions().addToMedia(userId!, id.toString());
 
                                           addedMedia!.add(id.toString());
+                                          print("Added media is $addedMedia");
                                           await SharedPreferenceHelper().setMedia(addedMedia!);
                                         }else{
                                           await DatabaseOptions().removeFromWatchlist(userId!, id.toString(), type);
                                           await DatabaseOptions().removeToMedia(userId!, id.toString());
 
                                           addedMedia!.remove(id.toString());
+                                          print("Removed media is $addedMedia");
                                           await SharedPreferenceHelper().setMedia(addedMedia!);
                                         }
 

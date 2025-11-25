@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:tmdbmovies/Apiservice.dart';
 import 'package:tmdbmovies/appdesign.dart';
 import 'package:tmdbmovies/singleepisode.dart';
@@ -50,7 +51,14 @@ class _AllSeasonEpisodesState extends State<AllSeasonEpisodes> {
         future: ApiService().fetchContent(detailsUrl),
         builder: (context, snapshot) {
           if(snapshot.connectionState == ConnectionState.waiting){
-            return Center(child: CircularProgressIndicator(color: Colors.white));
+            return Shimmer.fromColors(
+                baseColor: Colors.grey.shade900,
+                highlightColor: Colors.grey.shade800,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade900,
+                  ),
+                ));
           }else if(snapshot.hasError){
             return Center(child: Text("Data fetching error"));
           }else if(snapshot.hasData){

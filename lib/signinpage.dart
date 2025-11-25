@@ -215,14 +215,12 @@ class _SignInState extends State<SignIn> {
                               await SharedPreferenceHelper().setUserProfile(fetchedUserProfile);
                               await SharedPreferenceHelper().setMedia(fetchedMediaList);
                               await SharedPreferenceHelper().setLoginState(true);
-                              var test = await SharedPreferenceHelper().getUsername();
-                              print('Username after login $test');
 
                               setState(() {
                                 _isloading = false;
                               });
 
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('User Login successful')));
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Media List is $fetchedMediaList")));
                               Navigator.pushAndRemoveUntil(context,
                                   MaterialPageRoute(builder: (context) => MainContainerScreen()),
                                       (route) => false);

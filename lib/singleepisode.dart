@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:tmdbmovies/Apiservice.dart';
 import 'package:tmdbmovies/appdesign.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -46,7 +47,14 @@ class _SingleEpisodePageState extends State<SingleEpisodePage> {
           future: ApiService().fetchContent(detailsUrl),
           builder: (context, snapshot) {
             if(snapshot.connectionState == ConnectionState.waiting){
-              return Center(child: CircularProgressIndicator(color: Colors.white));
+              return Shimmer.fromColors(
+                  baseColor: Colors.grey.shade900,
+                  highlightColor: Colors.grey.shade800,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade900,
+                    ),
+                  ));
             }else if(snapshot.hasError){
               return Center(child: Text("Data has some error"));
             }else if(snapshot.hasData){
@@ -287,7 +295,7 @@ class _SingleEpisodePageState extends State<SingleEpisodePage> {
                                                     style: ElevatedButton.styleFrom(
                                                       backgroundColor: AppDesign().primaryAccent,
                                                     ),
-                                                    child: Text('Watch full video',style: TextStyle(color: Colors.white))),
+                                                    child: Icon(Icons.arrow_circle_right,color: Colors.white)),
                                               ),
                                             )
                                           ],
