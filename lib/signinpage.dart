@@ -195,6 +195,7 @@ class _SignInState extends State<SignIn> {
 
                             if(result == 0){
                               var id = await DatabaseOptions().fetchUserId(email.text);
+                              await DatabaseOptions().updatePassword(id!, passValue);
                               var userDetails = await DatabaseOptions().fetchUserDetails(id!);
                               var fetchedId = userDetails['id'];
                               var fetchedUsr = userDetails['username'];
@@ -220,7 +221,7 @@ class _SignInState extends State<SignIn> {
                                 _isloading = false;
                               });
 
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Media List is $fetchedMediaList")));
+                              // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Media List is $fetchedMediaList")));
                               Navigator.pushAndRemoveUntil(context,
                                   MaterialPageRoute(builder: (context) => MainContainerScreen()),
                                       (route) => false);

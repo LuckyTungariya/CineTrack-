@@ -24,7 +24,7 @@ class _ForgetPasswordPageState extends State<ForgetPasswordPage> {
       body: LoadingOverlay(
         isLoading: _isloading,
         color: Colors.transparent,
-        progressIndicator: Center(child: CircularProgressIndicator(color: Colors.white)),
+        progressIndicator: Center(child: CircularProgressIndicator(color: Colors.black)),
         child: Container(
           height: double.infinity,
           width: double.infinity,
@@ -159,8 +159,8 @@ Widget _returnTextField(TextEditingController controller){
         )
     ),
     validator: (value) {
-      if((value!.contains("@"))){
-        return 'InValid email provided';
+      if(!(value!.contains("@"))){
+        return 'Invalid email provided';
       }else if(value.isEmpty){
         return 'Please enter the email';
       }else{

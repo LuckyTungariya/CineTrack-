@@ -15,6 +15,7 @@ class AccountSettingsPage extends StatefulWidget {
 class _AccountSettingsPageState extends State<AccountSettingsPage> {
   bool _isVisible = false;
   bool _isloading = false;
+  bool _isEnabled = false;
   String? confirmPass;
   final _globalKey = GlobalKey<FormState>();
   final _deleteglobalKey = GlobalKey<FormState>();
@@ -238,11 +239,13 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                               Expanded(
                                 child: Align(
                                   alignment: Alignment.centerRight,
-                                  child: Switch(value: true,
+                                  child: Switch(value: _isEnabled,
                                       inactiveTrackColor: Colors.grey.shade500,
                                       activeTrackColor: AppDesign().primaryAccent,
-                                      onChanged: (value) {
-
+                                      onChanged: (bool value) {
+                                    setState(() {
+                                      _isEnabled = value;
+                                    });
                                   }),
                                 ),
                               )
@@ -266,11 +269,13 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                               Expanded(
                                 child: Align(
                                   alignment: Alignment.centerRight,
-                                  child: Switch(value: true,
+                                  child: Switch(value: _isEnabled,
                                       inactiveTrackColor: Colors.grey.shade500,
                                       activeTrackColor: AppDesign().primaryAccent,
-                                      onChanged: (value) {
-
+                                      onChanged: (bool value) {
+                                    setState(() {
+                                      _isEnabled = value;
+                                    });
                                       }),
                                 ),
                               )
@@ -294,11 +299,13 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                               Expanded(
                                 child: Align(
                                   alignment: Alignment.centerRight,
-                                  child: Switch(value: true,
+                                  child: Switch(value: _isEnabled,
                                       inactiveTrackColor: Colors.grey.shade500,
                                       activeTrackColor: AppDesign().primaryAccent,
-                                      onChanged: (value) {
-
+                                      onChanged: (bool value) {
+                                    setState(() {
+                                      _isEnabled = value;
+                                    });
                                       }),
                                 ),
                               )
