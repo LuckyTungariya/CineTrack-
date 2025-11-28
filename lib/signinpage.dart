@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:overlay_loader_with_app_icon/overlay_loader_with_app_icon.dart';
 import 'package:tmdbmovies/Databasemethods.dart';
 import 'package:tmdbmovies/appdesign.dart';
@@ -178,7 +179,7 @@ class _SignInState extends State<SignIn> {
                     Container(
                       margin: EdgeInsets.only(top: 20),
                       decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(30),
                           color: AppDesign().primaryAccent
                       ),
                       width: w,
@@ -260,7 +261,7 @@ class _SignInState extends State<SignIn> {
                             backgroundColor: Colors.transparent,
                             shadowColor: Colors.transparent,
                             shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10)
+                                borderRadius: BorderRadius.circular(30)
                             ),
                           ),
                           child: Row(
@@ -270,6 +271,43 @@ class _SignInState extends State<SignIn> {
                               Image.asset("assets/usedIcons/pencil.png",color: Colors.black,height: 20,width: 20),
                               Text(
                                 "Sign In",
+                                style: TextStyle(color: AppDesign().bgColor,fontSize: 20,fontFamily: 'Roboto'),
+                              ),
+                            ],
+                          )),
+                    ),
+
+                    SizedBox(
+                      height: 20,
+                    ),
+
+                    Text("OR",style: TextStyle(color: AppDesign().bgColor,fontSize: 18,fontFamily: 'Roboto',fontWeight: FontWeight.bold)),
+
+                    Container(
+                      margin: EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(30),
+                          color: AppDesign().textColor
+                      ),
+                      width: w,
+                      child: ElevatedButton(onPressed: () async{
+                        var result = await DatabaseOptions().googleLogin();
+                        print(result);
+                      },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            shadowColor: Colors.transparent,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30)
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            spacing: 10,
+                            children: [
+                              FaIcon(FontAwesomeIcons.google,color: AppDesign().bgColor,size: 20),
+                              Text(
+                                "Sign in with Google",
                                 style: TextStyle(color: AppDesign().bgColor,fontSize: 20,fontFamily: 'Roboto'),
                               ),
                             ],

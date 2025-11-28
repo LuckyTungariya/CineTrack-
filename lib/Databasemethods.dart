@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class DatabaseOptions{
   Future<int> createUser(String email,String password) async{
@@ -39,6 +40,36 @@ class DatabaseOptions{
         return 4;
       }
     }
+  }
+
+  Future<bool> googleLogin() async{
+  try{
+  final GoogleSignIn googleSignIn = GoogleSignIn.instance;
+  await googleSignIn.initialize();
+
+  final GoogleSignInAccount? user = await googleSignIn.authenticate();
+
+  if(user==null){
+  return false;
+  }
+
+  String? email = user.email;
+  String? displayName = user.displayName;
+
+  final GoogleSignInAuthentication userAuth = user.authentication;
+
+  final credential = GoogleAuthProvider.credential(
+  idToken: userAuth.idToken,
+  );
+
+  await FirebaseAuth.instance.signInWithCredential(credential);
+
+  return true;
+  }
+  catch (e) {
+  print("Error: $e");
+  return false;
+  }
   }
 
   Future<void> addUserDetails(String id,String usr,String email,String pss) async{

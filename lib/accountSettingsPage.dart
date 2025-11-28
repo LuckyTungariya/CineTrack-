@@ -13,16 +13,16 @@ class AccountSettingsPage extends StatefulWidget {
 }
 
 class _AccountSettingsPageState extends State<AccountSettingsPage> {
-  bool _isVisible = false;
   bool _isloading = false;
   bool _isEnabled = false;
+  bool _isAlerts = false;
+  bool _isAppUpdates = false;
   String? confirmPass;
   final _globalKey = GlobalKey<FormState>();
   final _deleteglobalKey = GlobalKey<FormState>();
   String? userName,email,pass,userId;
   TextEditingController usr = TextEditingController();
   TextEditingController eml = TextEditingController();
-  TextEditingController pss = TextEditingController();
   TextEditingController confirm = TextEditingController();
 
   @override
@@ -39,7 +39,6 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
 
     usr.text = userName!.trim();
     eml.text = email!.trim();
-    pss.text = pass!.trim();
     setState(() {
 
     });
@@ -128,35 +127,6 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
 
                         SizedBox(height: 5),
 
-                        Text('Change Password',style: TextStyle(color: AppDesign().textColor)),
-                        TextFormField(
-                          controller: pss,
-                          obscureText: !_isVisible,
-                          obscuringCharacter: '*',
-                          validator: (value) {
-                            if(value!.length<8){
-                              return 'Password length should be minimum 8 digits';
-                            }
-                          },
-                          onSaved: (value){
-                            pss.text = value!;
-                          },
-                          decoration: InputDecoration(
-                            suffixIcon: GestureDetector(
-                              onTap: (){
-                                setState(() {
-                                  _isVisible = !_isVisible;
-                                });
-                              },
-                                child: _isVisible ? Icon(Icons.visibility,color: Colors.white) : Icon(Icons.visibility_off,color: Colors.white)),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              )
-                          ),
-                        ),
-
-                        SizedBox(height: 5),
-
                         Container(
                           width: MediaQuery.of(context).size.width,
                           decoration: BoxDecoration(
@@ -164,12 +134,11 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                           ),
                           child: ElevatedButton(onPressed: () async{
                             if(_globalKey.currentState!.validate()){
-                              if((userName == usr.text && email == eml.text && pass == pss.text)){
+                              if((userName == usr.text && email == eml.text)){
                                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Nothing to update")));
                               }else{
                                 var checkUsr = usr.text;
                                 var checkEmail = eml.text;
-                                var checkPss = pss.text;
 
                                 setState(() {
                                   _isloading = true;
@@ -177,14 +146,9 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
 
                                 await DatabaseOptions().updateUserName(userId!, checkUsr);
                                 await DatabaseOptions().updateEmail(userId!, checkEmail);
-                                await DatabaseOptions().updatePassword(userId!, checkPss);
 
                                 await SharedPreferenceHelper().setUsername(checkUsr);
                                 await SharedPreferenceHelper().setEmail(checkEmail);
-                                await SharedPreferenceHelper().setPassword(checkPss);
-
-                                var nm = await SharedPreferenceHelper().getUsername();
-                                print(nm);
 
                                 setState(() {
                                   _isloading = false;
@@ -269,12 +233,12 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                               Expanded(
                                 child: Align(
                                   alignment: Alignment.centerRight,
-                                  child: Switch(value: _isEnabled,
+                                  child: Switch(value: _isAlerts,
                                       inactiveTrackColor: Colors.grey.shade500,
                                       activeTrackColor: AppDesign().primaryAccent,
                                       onChanged: (bool value) {
                                     setState(() {
-                                      _isEnabled = value;
+                                      _isAlerts = value;
                                     });
                                       }),
                                 ),
@@ -299,12 +263,12 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                               Expanded(
                                 child: Align(
                                   alignment: Alignment.centerRight,
-                                  child: Switch(value: _isEnabled,
+                                  child: Switch(value: _isAppUpdates,
                                       inactiveTrackColor: Colors.grey.shade500,
                                       activeTrackColor: AppDesign().primaryAccent,
                                       onChanged: (bool value) {
                                     setState(() {
-                                      _isEnabled = value;
+                                      _isAppUpdates = value;
                                     });
                                       }),
                                 ),
@@ -345,82 +309,109 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                       showDialog(context: context, builder: (context) {
                         return AlertDialog(
                           title: Text("Are you sure you want to delete account?",style: TextStyle(color: Colors.red)),
-                          content: Text("Once deleted account cannot be restored."),
+                          content: Text("Once deleted account cannot be restored.",style: TextStyle(color: Colors.white)),
                           elevation: 5,
+                          backgroundColor: Colors.grey.shade900,
+                          shape: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10)
+                          ),
                           icon: Icon(Icons.warning),
                           iconColor: Colors.red,
                           actions: [
-                            TextButton(onPressed: () async{
-                              Navigator.pop(context);
-
-                              showDialog(context: context,
-                                  builder: (context) {
-                                    return SimpleDialog(
-                                      elevation: 5,
-                                      insetPadding: EdgeInsets.all(5),
-                                      title: Center(child: Text("Confirm your identity?",style: TextStyle(color: Colors.red))),
-                                      backgroundColor: Colors.white,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(5)
-                                      ),
-                                      children: [
-                                        Center(child: Text("Re-enter your password to confirm identity",style: TextStyle(color: Colors.red))),
-                                        Form(
-                                          key : _deleteglobalKey,
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: TextFormField(
-                                              controller : confirm,
-                                              decoration: InputDecoration(
-                                                border: OutlineInputBorder(
-                                                  borderRadius: BorderRadius.circular(5)
-                                                ),
-                                                focusedBorder: OutlineInputBorder(
-                                                  borderRadius: BorderRadius.circular(5),
-                                                  borderSide: BorderSide(
-                                                    color: Colors.black
+                            Container(
+                              height : 40,
+                              decoration : BoxDecoration(
+                                  color: AppDesign().primaryAccent,
+                                  borderRadius: BorderRadius.circular(10)
+                              ),
+                              child: TextButton(onPressed: () async{
+                                Navigator.pop(context);
+                                confirm.clear();
+                                showDialog(context: context,
+                                    builder: (context) {
+                                      return SimpleDialog(
+                                        elevation: 5,
+                                        insetPadding: EdgeInsets.all(5),
+                                        title: Center(child: Text("Confirm your identity?",style: TextStyle(color: Colors.red))),
+                                        backgroundColor: Colors.grey.shade900,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(10)
+                                        ),
+                                        children: [
+                                          Center(child: Text("Re-enter your password to confirm identity",style: TextStyle(color: Colors.red))),
+                                          Form(
+                                            key : _deleteglobalKey,
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(8.0),
+                                              child: TextFormField(
+                                                controller : confirm,
+                                                style: TextStyle(color: Colors.black),
+                                                cursorColor : Colors.black,
+                                                decoration: InputDecoration(
+                                                  border: OutlineInputBorder(
+                                                    borderRadius: BorderRadius.circular(5)
+                                                  ),
+                                                  focusedBorder: OutlineInputBorder(
+                                                    borderRadius: BorderRadius.circular(5),
+                                                    borderSide: BorderSide(
+                                                      color: Colors.black
+                                                    )
                                                   )
-                                                )
+                                                ),
+                                                validator: (value) {
+                                                  if(pass!=value){
+                                                    return 'Please enter your correct password';
+                                                  }else{
+                                                    confirmPass = value;
+                                                    print(confirmPass);
+                                                    return null;
+                                                  }
+                                                },
                                               ),
-                                              validator: (value) {
-                                                if(pass!=value){
-                                                  return 'Please enter your correct password';
-                                                }else{
-                                                  confirmPass = value;
-                                                  print(confirmPass);
-                                                  return null;
-                                                }
-                                              },
                                             ),
                                           ),
-                                        ),
-                                        TextButton(onPressed: () async{
-                                          if(_deleteglobalKey.currentState!.validate()){
-                                            Navigator.pop(context);
+                                          Container(
+                                            height : 40,
+                                            decoration : BoxDecoration(
+                                                color: AppDesign().primaryAccent,
+                                                borderRadius: BorderRadius.circular(10)
+                                            ),
+                                            child: TextButton(onPressed: () async{
+                                              if(_deleteglobalKey.currentState!.validate()){
+                                                Navigator.pop(context);
 
-                                            setState(() {
-                                              _isloading = true;
-                                            });
+                                                setState(() {
+                                                  _isloading = true;
+                                                });
 
-                                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User account deleted successfully")));
-                                            Navigator.of(context,rootNavigator: true).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => SignUp()), (route) => false);
+                                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User account deleted successfully")));
+                                                Navigator.of(context,rootNavigator: true).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => SignUp()), (route) => false);
 
-                                            setState(() {
-                                              _isloading = false;
-                                            });
+                                                setState(() {
+                                                  _isloading = false;
+                                                });
 
-                                            var result = await DatabaseOptions().deleteUserAccount(userId!,confirmPass!);
-                                            print('The returned result $result');
+                                                var result = await DatabaseOptions().deleteUserAccount(userId!,confirmPass!);
+                                                print('The returned result $result');
 
-                                          }
-                                        }, child: Text('OK'))
-                                      ],
-                                    );
-                                  });
-                            }, child: Text('Yes')),
-                            TextButton(onPressed: (){
-                              Navigator.pop(context);
-                            }, child: Text('No'))
+                                              }
+                                            }, child: Text('OK',style: TextStyle(color : AppDesign().textColor))),
+                                          )
+                                        ],
+                                      );
+                                    });
+                              }, child: Text('Yes',style: TextStyle(color : AppDesign().textColor))),
+                            ),
+                            Container(
+                              height : 40,
+                              decoration : BoxDecoration(
+                                  color: AppDesign().primaryAccent,
+                                  borderRadius: BorderRadius.circular(10)
+                              ),
+                              child: TextButton(onPressed: (){
+                                Navigator.pop(context);
+                              }, child: Text('No',style: TextStyle(color : AppDesign().textColor))),
+                            )
                           ],
                         );
                       });

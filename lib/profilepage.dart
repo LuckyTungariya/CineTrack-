@@ -88,7 +88,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 backgroundColor: AppDesign().textColor,
                                 elevation: 5,
                                 title: Text('Confirm Photo?',style: TextStyle(color: Colors.black)),
-                                content: Text('Note : Image processing can take minutes keep patience',style: TextStyle(color: Colors.red)),
+                                content: Center(child: Text('Note : Image processing can take minutes keep patience',style: TextStyle(color: Colors.red))),
                                 alignment: Alignment.center,
                                 shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(5)
@@ -203,38 +203,52 @@ class _ProfilePageState extends State<ProfilePage> {
                       showDialog(context: context,
                           builder: (context) {
                             return AlertDialog(
-                              title: Text('Are you sure you want to logout?',style: TextStyle(color: Colors.red)),
+                              title: Center(child: Text('Are you sure you want to logout?',style: TextStyle(color: Colors.red))),
                               icon: Icon(Icons.warning,color: Colors.red),
                               elevation: 5,
-                              backgroundColor: Colors.white,
+                              backgroundColor: Colors.grey.shade900,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(5)
+                                borderRadius: BorderRadius.circular(10)
                               ),
                               actions: [
-                                TextButton(onPressed: () async{
-                                  setState(() {
-                                    _isloading = true;
-                                  });
+                                Container(
+                                  height : 40,
+                                  decoration : BoxDecoration(
+                                    color: AppDesign().primaryAccent,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: TextButton(onPressed: () async{
+                                    setState(() {
+                                      _isloading = true;
+                                    });
 
-                                  final prefs = await SharedPreferences.getInstance();
-                                  var usr = await SharedPreferenceHelper().getUsername();
-                                  print("Before Removal $usr");
-                                  prefs.clear();
-                                  var usr1 = await SharedPreferenceHelper().getUsername();
-                                  print("After Removal $usr1");
-                                  await FirebaseAuth.instance.signOut();
+                                    final prefs = await SharedPreferences.getInstance();
+                                    var usr = await SharedPreferenceHelper().getUsername();
+                                    print("Before Removal $usr");
+                                    prefs.clear();
+                                    var usr1 = await SharedPreferenceHelper().getUsername();
+                                    print("After Removal $usr1");
+                                    await FirebaseAuth.instance.signOut();
 
-                                  setState(() {
-                                    _isloading = false;
-                                  });
+                                    setState(() {
+                                      _isloading = false;
+                                    });
 
-                                  Navigator.pushAndRemoveUntil(context,MaterialPageRoute(builder: (context) => SignIn()),(route) => false);
-                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('User Logged out from session')));
-                                }, child: Text('Yes')),
+                                    Navigator.pushAndRemoveUntil(context,MaterialPageRoute(builder: (context) => SignIn()),(route) => false);
+                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('User Logged out from session')));
+                                  }, child: Text('Yes',style: TextStyle(color: AppDesign().textColor))),
+                                ),
 
-                                TextButton(onPressed: (){
-                                  Navigator.pop(context);
-                                }, child: Text('No'))
+                                Container(
+                                  height : 40,
+                                  decoration : BoxDecoration(
+                                      color: AppDesign().primaryAccent,
+                                      borderRadius: BorderRadius.circular(10)
+                                  ),
+                                  child: TextButton(onPressed: (){
+                                    Navigator.pop(context);
+                                  }, child: Text('No',style: TextStyle(color: AppDesign().textColor))),
+                                )
                               ],
                             );
                           });
