@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:random_string/random_string.dart';
 import 'package:tmdbmovies/Databasemethods.dart';
 import 'package:tmdbmovies/appdesign.dart';
+import 'package:tmdbmovies/sharedprefs.dart';
 import 'package:tmdbmovies/signinpage.dart';
 import 'package:overlay_loader_with_app_icon/overlay_loader_with_app_icon.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
+import 'maintohandlebottomnav.dart';
 
 class SignUp extends StatefulWidget {
   const SignUp({super.key});
@@ -278,15 +281,60 @@ class _SignUpState extends State<SignUp> {
                     Text("OR",style: TextStyle(color: AppDesign().bgColor,fontSize: 18,fontFamily: 'Roboto',fontWeight: FontWeight.bold)),
 
                     Container(
-                      margin: EdgeInsets.all(5),
                       decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(30),
                           color: AppDesign().textColor
                       ),
                       width: w,
                       child: ElevatedButton(onPressed: () async{
+
                         var result = await DatabaseOptions().googleLogin();
-                        print(result);
+                        if(result!=null){
+
+                          setState(() {
+                            _isloading = true;
+                          });
+
+                          var doc = await DatabaseOptions().fetchUserDetails(result.uid);
+                          if(!(doc.exists)){
+                            await DatabaseOptions().addUserDetails(result.uid, result.displayName!, result.email!, null);
+                          }
+
+                          var id = await DatabaseOptions().fetchUserId(result.email!);
+                          var userDetails = await DatabaseOptions().fetchUserDetails(id!);
+
+                          var fetchedId = userDetails['id'];
+                          var fetchedUsr = userDetails['username'];
+                          var fetchedEml = userDetails['email'];
+                          var fetchedPss = userDetails['password'] ?? "";
+                          var fetchedUserProfile = userDetails['profilePath'] ?? "";
+                          var fetchedMediaList = List<String>.from(userDetails['addedMedia'] ?? []);
+
+                          print('Id is $fetchedId');
+                          print('Username is $fetchedUsr');
+                          print('Email is $fetchedEml');
+                          print('Password is $fetchedPss');
+                          print('User profile is $fetchedUserProfile');
+                          print('Media List is $fetchedMediaList');
+
+                          await SharedPreferenceHelper().setUserId(fetchedId);
+                          await SharedPreferenceHelper().setUsername(fetchedUsr);
+                          await SharedPreferenceHelper().setEmail(fetchedEml);
+                          await SharedPreferenceHelper().setPassword(fetchedPss);
+                          await SharedPreferenceHelper().setUserProfile(fetchedUserProfile);
+                          await SharedPreferenceHelper().setMedia(fetchedMediaList);
+                          await SharedPreferenceHelper().setLoginState(true);
+
+                          setState(() {
+                            _isloading = false;
+                          });
+
+                          Navigator.pushAndRemoveUntil(context,
+                              MaterialPageRoute(builder: (context) => MainContainerScreen()),
+                                  (route) => false);
+
+                        }
+
                       },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.transparent,
@@ -301,7 +349,7 @@ class _SignUpState extends State<SignUp> {
                             children: [
                               FaIcon(FontAwesomeIcons.google,color: AppDesign().bgColor,size: 20),
                               Text(
-                                "Sign up with Google",
+                                "Sign in with Google",
                                 style: TextStyle(color: AppDesign().bgColor,fontSize: 20,fontFamily: 'Roboto'),
                               ),
                             ],

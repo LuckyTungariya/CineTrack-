@@ -12,7 +12,20 @@
           "package_name": "com.example.tmdbmovies"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "620622518870-ueofj8jfs70fm5ksund766hqejgntktk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.tmdbmovies",
+            "certificate_hash": "d8ff1f20e1c46176514696d1ed1b83a05703a61d"
+          }
+        },
+        {
+          "client_id": "620622518870-ri0pco01qubpc0svejo7u8tngco8ea4m.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyC7-4-z3fDkY_pSUYK2dbRF5fnO6wraaQU"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "620622518870-ri0pco01qubpc0svejo7u8tngco8ea4m.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

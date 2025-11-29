@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class DatabaseOptions{
@@ -42,37 +43,39 @@ class DatabaseOptions{
     }
   }
 
-  Future<bool> googleLogin() async{
+  Future<User?> googleLogin() async{
   try{
-  final GoogleSignIn googleSignIn = GoogleSignIn.instance;
-  await googleSignIn.initialize();
+    final GoogleSignIn googleSignIn = GoogleSignIn.instance;
+    await googleSignIn.initialize();
 
-  final GoogleSignInAccount? user = await googleSignIn.authenticate();
+    final GoogleSignInAccount? user = await googleSignIn.authenticate();
 
-  if(user==null){
-  return false;
+    if(user==null){
+    return null;
   }
 
   String? email = user.email;
   String? displayName = user.displayName;
+  print(email);
+  print(displayName);
 
   final GoogleSignInAuthentication userAuth = user.authentication;
 
   final credential = GoogleAuthProvider.credential(
-  idToken: userAuth.idToken,
+    idToken: userAuth.idToken,
   );
 
-  await FirebaseAuth.instance.signInWithCredential(credential);
+  final UserCredential userCredential =  await FirebaseAuth.instance.signInWithCredential(credential);
 
-  return true;
+  return userCredential.user;
   }
   catch (e) {
-  print("Error: $e");
-  return false;
-  }
+    print("Error: $e");
+    return null;
+    }
   }
 
-  Future<void> addUserDetails(String id,String usr,String email,String pss) async{
+  Future<void> addUserDetails(String id,String usr,String email,String? pss) async{
     await FirebaseFirestore.instance.collection('users').doc(id).set(
       {
         'id' : id,
@@ -181,7 +184,7 @@ class DatabaseOptions{
     });
   }
 
-  Future<int> deleteUserAccount(String id,String password) async{
+  Future<int> deleteUserAccountWithEmail(String id,String password) async{
     try{
       User? user = await FirebaseAuth.instance.currentUser;
 
@@ -200,6 +203,33 @@ class DatabaseOptions{
       return 1;
 
     }catch (e){
+      print('Someting went wrong deleting user account');
+      return 2;
+    }
+  }
+
+  Future<int> deleteUserAccountWithGoogle(BuildContext context) async{
+    try{
+      final googleSignIn = GoogleSignIn.instance;
+      final googleUser = await googleSignIn.authenticate();
+
+      final googleAuth = googleUser.authentication;
+
+      final credential = GoogleAuthProvider.credential(
+        idToken: googleAuth.idToken,
+      );
+
+      final user = FirebaseAuth.instance.currentUser!;
+      await user.reauthenticateWithCredential(credential);
+
+      await FirebaseFirestore.instance.collection("users")
+          .doc(user.uid)
+          .delete();
+
+      await user.delete();
+      return 1;
+    }catch (e){
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Something went wrong $e")));
       print('Someting went wrong deleting user account');
       return 2;
     }

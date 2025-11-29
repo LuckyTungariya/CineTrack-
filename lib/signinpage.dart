@@ -201,7 +201,7 @@ class _SignInState extends State<SignIn> {
                               var fetchedId = userDetails['id'];
                               var fetchedUsr = userDetails['username'];
                               var fetchedEml = userDetails['email'];
-                              var fetchedPss = userDetails['password'];
+                              var fetchedPss = userDetails['password'] ?? "";
                               var fetchedUserProfile = userDetails['profilePath'] ?? "";
                               var fetchedMediaList = List<String>.from(userDetails['addedMedia'] ?? []);
                               print('Id is $fetchedId');
@@ -281,42 +281,6 @@ class _SignInState extends State<SignIn> {
                       height: 20,
                     ),
 
-                    Text("OR",style: TextStyle(color: AppDesign().bgColor,fontSize: 18,fontFamily: 'Roboto',fontWeight: FontWeight.bold)),
-
-                    Container(
-                      margin: EdgeInsets.all(5),
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(30),
-                          color: AppDesign().textColor
-                      ),
-                      width: w,
-                      child: ElevatedButton(onPressed: () async{
-                        var result = await DatabaseOptions().googleLogin();
-                        print(result);
-                      },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.transparent,
-                            shadowColor: Colors.transparent,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30)
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            spacing: 10,
-                            children: [
-                              FaIcon(FontAwesomeIcons.google,color: AppDesign().bgColor,size: 20),
-                              Text(
-                                "Sign in with Google",
-                                style: TextStyle(color: AppDesign().bgColor,fontSize: 20,fontFamily: 'Roboto'),
-                              ),
-                            ],
-                          )),
-                    ),
-
-                    SizedBox(
-                      height: 20,
-                    ),
 
                     Divider(
                       color: Colors.black,

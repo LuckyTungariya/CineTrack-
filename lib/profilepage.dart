@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:loading_overlay/loading_overlay.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -19,7 +20,7 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   final defaultImageUrl = 'https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png';
-  String? name,email,userId,cid,profileUrl;
+  String? name,email,userId,cid,profileUrl,pass;
   final publicGateway = 'https://gateway.pinata.cloud/ipfs/';
   bool _isloading = false;
   final ImagePicker _picker = ImagePicker();
@@ -35,6 +36,7 @@ class _ProfilePageState extends State<ProfilePage> {
     userId = await SharedPreferenceHelper().getUserId();
     name = await SharedPreferenceHelper().getUsername();
     email = await SharedPreferenceHelper().getEmail();
+    pass = await SharedPreferenceHelper().getPassword();
     profileUrl = await SharedPreferenceHelper().getUserProfile();
     setState(() {
 
@@ -85,15 +87,15 @@ class _ProfilePageState extends State<ProfilePage> {
                         showDialog(context: context,
                             builder: (context) {
                               return AlertDialog(
-                                backgroundColor: AppDesign().textColor,
+                                backgroundColor: AppDesign().bgColor,
                                 elevation: 5,
-                                title: Text('Confirm Photo?',style: TextStyle(color: Colors.black)),
-                                content: Center(child: Text('Note : Image processing can take minutes keep patience',style: TextStyle(color: Colors.red))),
+                                title: Text('Confirm Photo?',style: TextStyle(color: Colors.white)),
+                                content: Text('Note : Image processing can take minutes keep patience',style: TextStyle(color: Colors.red)),
                                 alignment: Alignment.center,
                                 shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(5)
                                 ),
-                                icon: Icon(Icons.question_mark_outlined,color: Colors.black),
+                                icon: Icon(Icons.question_mark_outlined,color: Colors.white),
                                 iconColor: Colors.black,
                                 actions: [
                                   TextButton(onPressed: () async{
@@ -158,6 +160,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 child: ListTile(
                   onTap: (){
                     Navigator.push(context, MaterialPageRoute(builder: (context) => AccountSettingsPage()));
+                    getUserProfile();
                   },
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10)
@@ -229,6 +232,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                     var usr1 = await SharedPreferenceHelper().getUsername();
                                     print("After Removal $usr1");
                                     await FirebaseAuth.instance.signOut();
+                                    if(pass == ""){
+                                      GoogleSignIn.instance.signOut();
+                                    }
 
                                     setState(() {
                                       _isloading = false;

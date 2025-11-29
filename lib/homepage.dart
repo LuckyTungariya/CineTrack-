@@ -66,7 +66,7 @@ class _HomePageState extends State<HomePage> {
         leading: ClipOval(child: Image.asset("assets/usedIcons/onlyappico.png")),
         backgroundColor: Colors.black,
         titleSpacing: 2,
-        title: Text("Welcome $usr",style: TextStyle(fontFamily: 'Roboto',fontSize: 18,fontWeight: FontWeight.bold,color: AppDesign().textColor)),
+        title: Text("WELCOME $usr",style: TextStyle(fontFamily: 'Roboto',fontSize: 18,fontWeight: FontWeight.bold,color: AppDesign().textColor)),
       ),
       body: Padding(
         padding: const EdgeInsets.only(top: 0),

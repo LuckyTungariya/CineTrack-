@@ -105,8 +105,8 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
 
                         SizedBox(height: 5),
 
-                        Text('Email Address',style: TextStyle(color: AppDesign().textColor)),
-                        TextFormField(
+                        (pass!="") ? Text('Email Address',style: TextStyle(color: AppDesign().textColor)) : SizedBox(height: 0),
+                        (pass!="") ? TextFormField(
                           controller: eml,
                           validator: (value) {
                             if(!(value!.contains("@"))){
@@ -123,7 +123,7 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                                 borderRadius: BorderRadius.circular(10),
                               )
                           ),
-                        ),
+                        ) : SizedBox(height: 0),
 
                         SizedBox(height: 5),
 
@@ -327,7 +327,8 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                               child: TextButton(onPressed: () async{
                                 Navigator.pop(context);
                                 confirm.clear();
-                                showDialog(context: context,
+
+                                (pass!="") ? showDialog(context: context,
                                     builder: (context) {
                                       return SimpleDialog(
                                         elevation: 5,
@@ -391,7 +392,7 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                                                   _isloading = false;
                                                 });
 
-                                                var result = await DatabaseOptions().deleteUserAccount(userId!,confirmPass!);
+                                                var result = await DatabaseOptions().deleteUserAccountWithEmail(userId!,confirmPass!);
                                                 print('The returned result $result');
 
                                               }
@@ -399,7 +400,21 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                                           )
                                         ],
                                       );
+                                    }) : setState(() {
+                                      _isloading = true;
                                     });
+
+                                var result = await DatabaseOptions().deleteUserAccountWithGoogle(context);
+
+                                if(result == 1){
+                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User account deleted successfully")));
+                                  Navigator.of(context,rootNavigator: true).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => SignUp()), (route) => false);
+                                }
+
+                                setState(() {
+                                  _isloading = false;
+                                });
+
                               }, child: Text('Yes',style: TextStyle(color : AppDesign().textColor))),
                             ),
                             Container(
