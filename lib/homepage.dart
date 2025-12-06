@@ -4,6 +4,8 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:tmdbmovies/appdesign.dart';
 import 'package:tmdbmovies/detailpage.dart';
+import 'package:tmdbmovies/notification_services.dart';
+import 'package:once/once.dart';
 import 'package:tmdbmovies/sharedprefs.dart';
 import 'package:shimmer/shimmer.dart';
 import 'Apiservice.dart';
@@ -16,6 +18,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  NotificationServices services = NotificationServices();
+
   String? usr;
   final List<String> trendingHints = [
     'Search anything',
@@ -47,6 +51,8 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    Once.runOnce("Ask Permission",
+        callback: () => services.requestUserAboutNotify());
     getUserName();
   }
 

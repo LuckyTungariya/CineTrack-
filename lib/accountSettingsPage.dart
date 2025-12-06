@@ -1,7 +1,9 @@
+import 'package:app_settings/app_settings.dart';
 import 'package:flutter/material.dart';
 import 'package:loading_overlay/loading_overlay.dart';
 import 'package:tmdbmovies/Databasemethods.dart';
 import 'package:tmdbmovies/appdesign.dart';
+import 'package:tmdbmovies/notification_services.dart';
 import 'package:tmdbmovies/sharedprefs.dart';
 import 'package:tmdbmovies/signuppage.dart';
 
@@ -14,9 +16,6 @@ class AccountSettingsPage extends StatefulWidget {
 
 class _AccountSettingsPageState extends State<AccountSettingsPage> {
   bool _isloading = false;
-  bool _isEnabled = false;
-  bool _isAlerts = false;
-  bool _isAppUpdates = false;
   String? confirmPass;
   final _globalKey = GlobalKey<FormState>();
   final _deleteglobalKey = GlobalKey<FormState>();
@@ -169,132 +168,6 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                     ),
                   )
                 ]),
-
-                SizedBox(
-                  height: 10,
-                ),
-
-                ExpansionTile(title: Text('Notification Preferences',
-                    style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',fontWeight: FontWeight.bold)),
-                    backgroundColor: Colors.grey.shade800,
-                    childrenPadding: EdgeInsets.all(10),
-                    iconColor: Colors.white,
-                    collapsedIconColor: Colors.white,
-                    textColor: AppDesign().textColor,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)
-                    ),
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('New Episode Alerts',style: TextStyle(color: AppDesign().textColor)),
-                                  Text("Get the top new episodes alerts first.",style: TextStyle(color: AppDesign().secondaryTextColor))
-                                ],
-                              ),
-
-                              Expanded(
-                                child: Align(
-                                  alignment: Alignment.centerRight,
-                                  child: Switch(value: _isEnabled,
-                                      inactiveTrackColor: Colors.grey.shade500,
-                                      activeTrackColor: AppDesign().primaryAccent,
-                                      onChanged: (bool value) {
-                                    setState(() {
-                                      _isEnabled = value;
-                                    });
-                                  }),
-                                ),
-                              )
-                            ],
-                          ),
-
-                          SizedBox(height: 5),
-
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('Recommendations Alerts',style: TextStyle(color: AppDesign().textColor)),
-                                  Text("Personalized show suggestion.",style: TextStyle(color: AppDesign().secondaryTextColor))
-                                ],
-                              ),
-
-                              Expanded(
-                                child: Align(
-                                  alignment: Alignment.centerRight,
-                                  child: Switch(value: _isAlerts,
-                                      inactiveTrackColor: Colors.grey.shade500,
-                                      activeTrackColor: AppDesign().primaryAccent,
-                                      onChanged: (bool value) {
-                                    setState(() {
-                                      _isAlerts = value;
-                                    });
-                                      }),
-                                ),
-                              )
-                            ],
-                          ),
-
-                          SizedBox(height: 5),
-
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('App Updates & News',style: TextStyle(color: AppDesign().textColor)),
-                                  Text("New features,tips, and announcements.",style: TextStyle(color: AppDesign().secondaryTextColor))
-                                ],
-                              ),
-
-                              Expanded(
-                                child: Align(
-                                  alignment: Alignment.centerRight,
-                                  child: Switch(value: _isAppUpdates,
-                                      inactiveTrackColor: Colors.grey.shade500,
-                                      activeTrackColor: AppDesign().primaryAccent,
-                                      onChanged: (bool value) {
-                                    setState(() {
-                                      _isAppUpdates = value;
-                                    });
-                                      }),
-                                ),
-                              )
-                            ],
-                          ),
-
-                          Container(
-                            width: MediaQuery.of(context).size.width,
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10)
-                            ),
-                            child: ElevatedButton(onPressed: (){},
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppDesign().primaryAccent,
-                                ),
-                                child: Text('Save Preferences',style: TextStyle(color: AppDesign().textColor,
-                                    fontFamily: 'Roboto',fontWeight: FontWeight.bold,fontSize: 18))),
-                          ),
-                        ],
-                      )
-                    ]),
-
-                  SizedBox(
-                    height: 20,
-                  ),
 
                 SizedBox(
                   height: 20,

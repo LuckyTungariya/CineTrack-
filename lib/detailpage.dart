@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:tmdbmovies/Apiservice.dart';
 import 'package:tmdbmovies/Databasemethods.dart';
@@ -26,7 +27,7 @@ class _DetailPageState extends State<DetailPage> {
   Map<dynamic,dynamic> indiaWatchProviders = {};
   Map<dynamic,dynamic> usWatchProviders = {};
   Map<dynamic,dynamic> watchProviders = {};
-  late String key;
+  String key = "";
   Map<dynamic,dynamic> detailsArray = {};
   late var id = widget.id;
   late var type = widget.type;
@@ -94,6 +95,16 @@ class _DetailPageState extends State<DetailPage> {
               return Text("Error fetching the content");
             }else if(snapshot.hasData){
               detailsArray = snapshot.data!;
+              final List videos = (type == 'movie' || type == 'tv') ? (detailsArray['videos']?['results'] ?? []) : [];
+              if(videos.isNotEmpty) {
+                for (var video in videos) {
+                  if ((video['type'] == 'Trailer' && video['site'] == 'YouTube') ||
+                      (video['type'] == 'Clip' && video['site'] == 'YouTube')) {
+                    key = video['key'];
+                    break;
+                  }
+                }
+              }
               final String posterPath;
               final String department;
               type == 'person' ? department = detailsArray['known_for_department'] ?? 'Not available' : department = '';
@@ -104,7 +115,6 @@ class _DetailPageState extends State<DetailPage> {
               type == 'movie' ? releaseDate = detailsArray['release_date'].toString() : type == 'tv' ? releaseDate = detailsArray['first_air_date'].toString() : releaseDate = '';
               final String revenue;
               type == 'movie' ? revenue = detailsArray['revenue'].toString() : revenue = '';
-              final List videos = (type == 'movie' || type == 'tv') ? (detailsArray['videos']?['results'] ?? []) : [];
               final List seasons = (type == 'tv') ? (detailsArray['seasons'] ?? []) : [];
               final String totalSeasons;
               type == 'tv' ? totalSeasons = detailsArray['number_of_seasons'].toString() : totalSeasons = '';
@@ -177,19 +187,13 @@ class _DetailPageState extends State<DetailPage> {
                           Navigator.pop(context);
                         }, icon: CircleAvatar(backgroundColor: Colors.black,child: Icon(Icons.arrow_back_rounded,color: Colors.white)))),
 
+
                     (type == 'movie' || type == 'tv') ? isVideoPlaying ? SizedBox(height: 0) : Positioned(
                       top: 100,
                       left: 150,
                       child: IconButton(onPressed: (){
-                        if(videos.isNotEmpty){
-                          for(var video in videos){
-                            if((video['type'] == 'Trailer' && video['site'] == 'YouTube')||(video['type'] == 'Clip' && video['site'] == 'YouTube')){
-                              key = video['key'];
-                              break;
-                            }
-                          }
-                        }else{
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Youtube video not found")));
+                        if(key==''){
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Trailer not found")));
                         }
 
                         if(key!='') {
@@ -208,6 +212,23 @@ class _DetailPageState extends State<DetailPage> {
                         }
                       }, icon: CircleAvatar(backgroundColor: Colors.black,radius: 25,child: Icon(Icons.play_arrow,size: 50,color: Colors.white))),
                     ) : Text(''),
+
+                    Positioned(
+                        top : 20,
+                        left: 300,
+                        child: IconButton(onPressed: () async{
+                          try{
+                            final params = ShareParams(
+                                title: "Share anything from via CineTrack",
+                                uri: Uri.parse("https://www.youtube.com/watch?v=$key")
+                            );
+
+                            final result = await SharePlus.instance.share(params);
+                          } catch (e){
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Something went wrong $e")));
+                          }
+
+                        }, icon: CircleAvatar(backgroundColor: Colors.black,child: Icon(Icons.share,color: Colors.white)))),
 
                     Padding(
                       padding: EdgeInsets.only(
