@@ -85,172 +85,181 @@ class _WatchListPageState extends State<WatchListPage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Text('Watchlist',style: TextStyle(color: AppDesign().textColor,
-                    fontFamily: 'Roboto',fontWeight: FontWeight.bold,fontSize: 20)),
-
-                SizedBox(
-                  height: 10,
-                ),
-
-                SizedBox(
-                  width: MediaQuery.of(context).size.width,
-                  child: AnimatedToggleSwitch.size(
-                      indicatorSize: Size(100, 40),
-                      animationCurve: Curves.easeInOut,
-                      current: currentIndex,
-                      values: [0,1,2],
-                      padding: EdgeInsets.only(left: 20,right: 10,top: 5,bottom: 5),
-                      style: ToggleStyle(
-                          indicatorBorderRadius: BorderRadius.circular(15),
-                          indicatorColor: AppDesign().primaryAccent,
-                          borderRadius: BorderRadius.circular(15),
-                          backgroundColor: Colors.grey.shade800,
-                          borderColor: AppDesign().bgColor
-                      ),
-                      height: 50,
-                      spacing: 5,
-                      onChanged: (value) {
-                        setState(() {
-                          currentIndex = value;
-                          _isSearching = false;
-                          searchResults.clear();
-                        });
-                      },
-                      iconBuilder: (value) {
-                        String text;
-                        switch(value){
-                          case 0:
-                            text = 'All';
-                            break;
-
-                          case 1:
-                            text = 'Movies';
-                            break;
-
-                          case 2:
-                            text = 'Tv';
-                            break;
-
-                          default:
-                            text = '';
-                            break;
-                        }
-                        return SizedBox(
-                          width: 150,
-                          child: Center(child: Text(text,style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto'))),
-                        );
-                      }),
-                ),
-              ],
-            ),
-
-            _isSearching ? _buildSearchResults() : Expanded(
-              child: Column(
+        child: Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
+                  Text('Watchlist',style: TextStyle(color: AppDesign().textColor,
+                      fontFamily: 'Roboto',fontWeight: FontWeight.bold,fontSize: 20)),
+
                   SizedBox(
                     height: 10,
                   ),
 
-                  userId==null ? Center(child: CircularProgressIndicator(color: Colors.white)) : Expanded(
-                    child: SizedBox(
-                      child: StreamBuilder(
-                          stream: _returnSnapshots(userId!),
-                          builder: (context, snapshot) {
-                            if(snapshot.connectionState == ConnectionState.waiting){
-                              return Center(child: CircularProgressIndicator(color: Colors.white));
-                            }else if(snapshot.hasError){
-                              return Center(child: Text('Data fetching error'));
-                            }else if(!snapshot.data!.exists){
-                              return Center(child: Text("User data does not exists"));
-                            } else if(snapshot.hasData){
-                              List watchlist = snapshot.data?['watchlist'] ?? [];
-                              if(currentIndex == 0){
-                                userWatchList.clear();
-                                userWatchList = watchlist;
-                              }else if(currentIndex == 1){
-                                userWatchList.clear();
-                                if(watchlist.isNotEmpty){
-                                  for(var item in watchlist){
-                                    if(item['mediaType'] == 'movie'){
-                                      userWatchList.add(item);
-                                    }
-                                  }
-                                }else{
-                                  userWatchList = [];
-                                }
-                              }else if(currentIndex == 2){
-                                userWatchList.clear();
-                                if(watchlist.isNotEmpty){
-                                  for(var item in watchlist){
-                                    if(item['mediaType'] == 'tv'){
-                                      userWatchList.add(item);
-                                    }
-                                  }
-                                }else{
-                                  userWatchList = [];
-                                }
-                              }
-                              return userWatchList.isEmpty ? Center(child: Text("Nothing in Watchlist",
-                                  style: TextStyle(color: Colors.white,fontFamily: 'Roboto'))) : GridView.builder(gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
-                                  scrollDirection: Axis.vertical,
-                                  itemCount: userWatchList.length,
-                                  itemBuilder: (context, index) {
-                                    var mediaId = userWatchList[index]['mediaId'];
-                                    var mediaType = userWatchList[index]['mediaType'];
-                                    var img = userWatchList[index]['imgPath'];
-                                    return GestureDetector(
-                                      onTap: (){
-                                        Navigator.push(context,MaterialPageRoute(builder: (context) => DetailPage(id: mediaId.toString(), type: mediaType)));
-                                      },
-                                      child: Container(
-                                        height: 350,
-                                        margin: EdgeInsets.all(5),
-                                        decoration: BoxDecoration(
-                                          color: Colors.grey.shade800,
-                                          borderRadius: BorderRadius.circular(5),
-                                        ),
-                                        child: Stack(
-                                          fit: StackFit.expand,
-                                          children: [
-                                            ClipRRect(
-                                              borderRadius: BorderRadius.circular(5),
-                                              child: Image.network(
-                                                img,fit: BoxFit.fill,errorBuilder: (context, error, stackTrace) {
-                                                return ClipRRect(borderRadius: BorderRadius.circular(5),child: Image.network(defaultShowUrl,fit: BoxFit.cover));
-                                              },
-                                              ),
-                                            ),
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width,
+                    child: AnimatedToggleSwitch.size(
+                        indicatorSize: Size(100, 40),
+                        animationCurve: Curves.easeInOut,
+                        current: currentIndex,
+                        values: [0,1,2],
+                        padding: EdgeInsets.only(left: 20,right: 10,top: 5,bottom: 5),
+                        style: ToggleStyle(
+                            indicatorBorderRadius: BorderRadius.circular(15),
+                            indicatorColor: AppDesign().primaryAccent,
+                            borderRadius: BorderRadius.circular(15),
+                            backgroundColor: Colors.grey.shade800,
+                            borderColor: AppDesign().bgColor
+                        ),
+                        height: 50,
+                        spacing: 5,
+                        onChanged: (value) {
+                          setState(() {
+                            currentIndex = value;
+                            _isSearching = false;
+                            searchResults.clear();
+                          });
+                        },
+                        iconBuilder: (value) {
+                          String text;
+                          switch(value){
+                            case 0:
+                              text = 'All';
+                              break;
 
-                                            Positioned(
-                                                top : 5,
-                                                left: 5,
-                                                child: IconButton(onPressed: () async{
-                                                  await DatabaseOptions().removeFromWatchlist(userId!,userWatchList[index]['mediaId'],userWatchList[index]['mediaType']);
-                                                }, icon: CircleAvatar(backgroundColor: Colors.black,child: Icon(Icons.bookmark_remove,color: Colors.white)))),
-                                          ],
-                                        ),
-                                      ),
-                                    );
-                                  });
-                            }else{
-                              return Text('Some exception caught');
-                            }
+                            case 1:
+                              text = 'Movies';
+                              break;
+
+                            case 2:
+                              text = 'Tv';
+                              break;
+
+                            default:
+                              text = '';
+                              break;
                           }
-                      ),
-                    ),
-                  )
+                          return SizedBox(
+                            width: 150,
+                            child: Center(child: Text(text,style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto'))),
+                          );
+                        }),
+                  ),
                 ],
               ),
-            ),
-          ],
+
+              _isSearching ? _buildSearchResults() : Expanded(
+                child: Column(
+                  children: [
+                    SizedBox(
+                      height: 10,
+                    ),
+
+                    userId==null ? Center(child: CircularProgressIndicator(color: Colors.white)) : Expanded(
+                      child: SizedBox(
+                        child: StreamBuilder(
+                            stream: _returnSnapshots(userId!),
+                            builder: (context, snapshot) {
+                              if(snapshot.connectionState == ConnectionState.waiting){
+                                return Center(child: CircularProgressIndicator(color: Colors.white));
+                              }else if(snapshot.hasError){
+                                return Center(child: Text('Data fetching error'));
+                              }else if(!snapshot.data!.exists){
+                                return Center(child: Text("User data does not exists"));
+                              } else if(snapshot.hasData){
+                                List watchlist = snapshot.data?['watchlist'] ?? [];
+                                if(currentIndex == 0){
+                                  userWatchList.clear();
+                                  userWatchList = watchlist;
+                                }else if(currentIndex == 1){
+                                  userWatchList.clear();
+                                  if(watchlist.isNotEmpty){
+                                    for(var item in watchlist){
+                                      if(item['mediaType'] == 'movie'){
+                                        userWatchList.add(item);
+                                      }
+                                    }
+                                  }else{
+                                    userWatchList = [];
+                                  }
+                                }else if(currentIndex == 2){
+                                  userWatchList.clear();
+                                  if(watchlist.isNotEmpty){
+                                    for(var item in watchlist){
+                                      if(item['mediaType'] == 'tv'){
+                                        userWatchList.add(item);
+                                      }
+                                    }
+                                  }else{
+                                    userWatchList = [];
+                                  }
+                                }
+                                return userWatchList.isEmpty ? Center(child: Text("Nothing in Watchlist",
+                                    style: TextStyle(color: Colors.white,fontFamily: 'Roboto'))) : GridView.builder(gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
+                                    scrollDirection: Axis.vertical,
+                                    itemCount: userWatchList.length,
+                                    itemBuilder: (context, index) {
+                                      var mediaId = userWatchList[index]['mediaId'];
+                                      var mediaType = userWatchList[index]['mediaType'];
+                                      var img = userWatchList[index]['imgPath'] ?? defaultShowUrl;
+                                      return GestureDetector(
+                                        onTap: (){
+                                          try{
+                                            print('Media id is $mediaId');
+                                            print('Media type is $mediaType');
+                                            print("Img path is $img");
+                                            Navigator.push(context,MaterialPageRoute(builder: (context) => DetailPage(id: mediaId.toString(), type: mediaType)));
+                                          }catch (e){
+                                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Something went wrong $e")));
+                                          }
+                                        },
+                                        child: Container(
+                                          height: 350,
+                                          margin: EdgeInsets.all(5),
+                                          decoration: BoxDecoration(
+                                            color: Colors.grey.shade800,
+                                            borderRadius: BorderRadius.circular(5),
+                                          ),
+                                          child: Stack(
+                                            fit: StackFit.expand,
+                                            children: [
+                                              ClipRRect(
+                                                borderRadius: BorderRadius.circular(5),
+                                                child: Image.network(
+                                                  img,fit: BoxFit.fill,errorBuilder: (context, error, stackTrace) {
+                                                  return ClipRRect(borderRadius: BorderRadius.circular(5),child: Image.network(defaultShowUrl,fit: BoxFit.cover));
+                                                },
+                                                ),
+                                              ),
+
+                                              Positioned(
+                                                  top : 5,
+                                                  left: 5,
+                                                  child: IconButton(onPressed: () async{
+                                                    await DatabaseOptions().removeFromWatchlist(userId!,userWatchList[index]['mediaId'],userWatchList[index]['mediaType']);
+                                                  }, icon: CircleAvatar(backgroundColor: Colors.black,child: Icon(Icons.bookmark_remove,color: Colors.white)))),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    });
+                              }else{
+                                return Text('Some exception caught');
+                              }
+                            }
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

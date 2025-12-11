@@ -1,9 +1,8 @@
-import 'package:app_settings/app_settings.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:loading_overlay/loading_overlay.dart';
 import 'package:tmdbmovies/Databasemethods.dart';
 import 'package:tmdbmovies/appdesign.dart';
-import 'package:tmdbmovies/notification_services.dart';
 import 'package:tmdbmovies/sharedprefs.dart';
 import 'package:tmdbmovies/signuppage.dart';
 
@@ -17,6 +16,7 @@ class AccountSettingsPage extends StatefulWidget {
 class _AccountSettingsPageState extends State<AccountSettingsPage> {
   bool _isloading = false;
   String? confirmPass;
+  GoogleSignInAccount? account;
   final _globalKey = GlobalKey<FormState>();
   final _deleteglobalKey = GlobalKey<FormState>();
   String? userName,email,pass,userId;
@@ -146,6 +146,8 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                                 await DatabaseOptions().updateUserName(userId!, checkUsr);
                                 await DatabaseOptions().updateEmail(userId!, checkEmail);
 
+                                await SharedPreferenceHelper().removeUsername();
+                                await SharedPreferenceHelper().removePassword();
                                 await SharedPreferenceHelper().setUsername(checkUsr);
                                 await SharedPreferenceHelper().setEmail(checkEmail);
 
@@ -277,16 +279,17 @@ class _AccountSettingsPageState extends State<AccountSettingsPage> {
                                       _isloading = true;
                                     });
 
-                                var result = await DatabaseOptions().deleteUserAccountWithGoogle(context);
+                                account = await DatabaseOptions().authenticateUser(context);
 
-                                if(result == 1){
-                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User account deleted successfully")));
-                                  Navigator.of(context,rootNavigator: true).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => SignUp()), (route) => false);
-                                }
+                                // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User chosen account is $account")));
+                                // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("User account deleted successfully")));
+                                Navigator.of(context,rootNavigator: true).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => SignUp()), (route) => false);
 
                                 setState(() {
                                   _isloading = false;
                                 });
+
+                                var result = await DatabaseOptions().deleteUserAccountWithGoogle(context,account!);
 
                               }, child: Text('Yes',style: TextStyle(color : AppDesign().textColor))),
                             ),

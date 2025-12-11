@@ -89,52 +89,54 @@ class _AllSeasonEpisodesState extends State<AllSeasonEpisodes> {
                         link: link,
                         flatrate: flatRate)));
                   },
-                  child: Container(
-                    width: MediaQuery.of(context).size.width,
-                    height: 100,
-                    decoration: BoxDecoration(
-                        color: Colors.grey.shade800,
-                        borderRadius: BorderRadius.circular(10)
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        SizedBox(
-                          width : 100,
-                          height: 80,
-                          child: Card(
-                            elevation: 5,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10)
+                  child: Expanded(
+                    child: Container(
+                      width: MediaQuery.of(context).size.width,
+                      height: 100,
+                      decoration: BoxDecoration(
+                          color: Colors.grey.shade800,
+                          borderRadius: BorderRadius.circular(10)
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width : 100,
+                            height: 80,
+                            child: Card(
+                              elevation: 5,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10)
+                              ),
+                              margin: EdgeInsets.all(5),
+                              child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: Image.network('$imageBaseUrl${episodesArray[index]['still_path']}',fit: BoxFit.fill,errorBuilder: (context, error, stackTrace) {
+                                    return Image.network(defaultShowUrl,fit: BoxFit.fill);
+                                  })),
                             ),
-                            margin: EdgeInsets.all(5),
-                            child: ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
-                                child: Image.network('$imageBaseUrl${episodesArray[index]['still_path']}',fit: BoxFit.fill,errorBuilder: (context, error, stackTrace) {
-                                  return Image.network(defaultShowUrl,fit: BoxFit.fill);
-                                })),
                           ),
-                        ),
-                              
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text("Episode ${episodesArray[index]['episode_number'].toString()}",
-                                  style: TextStyle(color: AppDesign().primaryAccent,fontFamily: 'Roboto',fontSize: 20,fontWeight: FontWeight.normal)),
-                              
-                              Text("${episodesArray[index]['name']}",
-                                  style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',fontWeight: FontWeight.bold),maxLines: 1),
-                              
-                              Text("${episodesArray[index]['overview']}",
-                                  softWrap: true,
-                                  style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',fontWeight: FontWeight.normal,overflow: TextOverflow.ellipsis),maxLines: 1)
-                            ],
+                                
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text("Episode ${episodesArray[index]['episode_number'].toString()}",
+                                    style: TextStyle(color: AppDesign().primaryAccent,fontFamily: 'Roboto',fontSize: 20,fontWeight: FontWeight.normal)),
+                                
+                                Text("${episodesArray[index]['name']}",
+                                    style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',fontWeight: FontWeight.bold),maxLines: 1),
+                                
+                                Text("${episodesArray[index]['overview']}",
+                                    softWrap: true,
+                                    style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',fontWeight: FontWeight.normal,overflow: TextOverflow.ellipsis),maxLines: 1)
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),

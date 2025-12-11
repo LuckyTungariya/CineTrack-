@@ -27,18 +27,21 @@ class _HomePageState extends State<HomePage> {
     'Search rated movies',
     'Search popular tv'
   ];
+
   final List<String> movieHints = [
     'Search top movies',
     'Search popular movies',
     'Search upcoming movies',
     'Search movies now playing'
   ];
+
   final List<String> tvHints = [
     'Search rated tv show',
     'Search airing today',
     'Search popular movies',
     'Search on the air tv'
   ];
+
   int currentIndex = 0;
   TextEditingController searchField = TextEditingController();
   Map<dynamic,dynamic> trendingContentArray = {};
@@ -51,14 +54,13 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    getUserName();
     Once.runOnce("Ask Permission",
         callback: () => services.requestUserAboutNotify());
-    getUserName();
   }
 
   Future<void> getUserName() async{
-    var nm = await SharedPreferenceHelper().getUsername();
-    usr = nm!;
+    usr = await SharedPreferenceHelper().getUsername();
     setState(() {
 
     });
@@ -76,231 +78,233 @@ class _HomePageState extends State<HomePage> {
       ),
       body: Padding(
         padding: const EdgeInsets.only(top: 0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Divider(height: 0.5,
-            color: AppDesign().bgColor),
+        child: Expanded(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Divider(height: 0.5,
+              color: AppDesign().bgColor),
 
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: TextFormField(
-                controller: searchField,
-                style: TextStyle(color: AppDesign().textColor),
-                decoration: InputDecoration(
-                  suffixIcon: searchField.text.isNotEmpty  ? IconButton(onPressed: (){
-                    searchField.clear();
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextFormField(
+                  controller: searchField,
+                  style: TextStyle(color: AppDesign().textColor),
+                  decoration: InputDecoration(
+                    suffixIcon: searchField.text.isNotEmpty  ? IconButton(onPressed: (){
+                      searchField.clear();
+                      setState(() {
+                        _isloading = false;
+                        _isSearching = false;
+                      });
+                    },
+                        icon: Icon(Icons.clear,color: Colors.white)) : null,
+                    hintText: currentIndex == 0 ? 'Search any category' : (currentIndex == 1) ? 'Search top movies' : 'Search top tv shows',
+                    hintStyle : TextStyle(color: AppDesign().secondaryTextColor,fontWeight: FontWeight.normal),
+                    fillColor: AppDesign().secondaryTextColor,
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20)
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: BorderSide(
+                            color: AppDesign().textColor
+                        )
+                    ),
+                  ),
+                  onChanged: (value) {
+                    currentIndex == 0 ? searchContent(value,'https://api.themoviedb.org/3/search/multi') :
+                        currentIndex == 1 ? searchContent(value,'https://api.themoviedb.org/3/search/movie') :
+                        searchContent(value,'https://api.themoviedb.org/3/search/tv');
+                  },
+                ),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  child: AnimatedToggleSwitch.size(
+                    indicatorSize: Size(100, 40),
+                    animationCurve: Curves.easeInOut,
+                      current: currentIndex,
+                      values: [0,1,2],
+                  padding: EdgeInsets.only(left: 20,right: 10,top: 5,bottom: 5),
+                  style: ToggleStyle(
+                    indicatorBorderRadius: BorderRadius.circular(15),
+                    indicatorColor: AppDesign().primaryAccent,
+                    borderRadius: BorderRadius.circular(15),
+                    backgroundColor: Colors.grey.shade800,
+                    borderColor: AppDesign().bgColor
+                  ),
+                  height: 50,
+                  spacing: 5,
+                  onChanged: (value) {
                     setState(() {
-                      _isloading = false;
-                      _isSearching = false;
+                      currentIndex = value;
                     });
                   },
-                      icon: Icon(Icons.clear,color: Colors.white)) : null,
-                  hintText: currentIndex == 0 ? 'Search any category' : (currentIndex == 1) ? 'Search top movies' : 'Search top tv shows',
-                  hintStyle : TextStyle(color: AppDesign().secondaryTextColor,fontWeight: FontWeight.normal),
-                  fillColor: AppDesign().secondaryTextColor,
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20)
+                  iconBuilder: (value) {
+                      String text;
+                    switch(value){
+                      case 0:
+                        text = 'Trending';
+                        break;
+
+                      case 1:
+                        text = 'Movies';
+                        break;
+
+                      case 2:
+                        text = 'Tv';
+                        break;
+
+                      default:
+                         text = '';
+                         break;
+                    }
+                    return SizedBox(
+                      width: 150,
+                      child: Center(child: Text(text,style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto'))),
+                    );
+                  }),
+                ),
+              ),
+
+              Expanded(
+                child: Container(
+                  height: MediaQuery.of(context).size.height,
+                  decoration: BoxDecoration(
+                    color: AppDesign().bgColor
                   ),
-                  focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                      borderSide: BorderSide(
-                          color: AppDesign().textColor
-                      )
+                  child: _isSearching ? _buildSearchResults() : SingleChildScrollView(
+                    scrollDirection: Axis.vertical,
+                    child: currentIndex == 0 ? Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8),
+                          child: Container(alignment: Alignment.topLeft
+                              ,child: Text("All",style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',fontSize: 20))
+                          ),
+                        ),
+
+                        _returnContent(ApiService().fetchContent("https://api.themoviedb.org/3/trending/all/day?language=en-US")),
+
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8),
+                          child: Container(alignment: Alignment.topLeft
+                              ,child: Text("Movies",style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',fontSize: 20))
+                          ),
+                        ),
+
+                        _returnContent(ApiService().fetchContent("https://api.themoviedb.org/3/trending/movie/day?language=en-US")),
+
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8),
+                          child: Container(alignment: Alignment.topLeft
+                              ,child: Text("Tv",style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',fontSize: 20))
+                          ),
+                        ),
+
+                        _returnContent(ApiService().fetchContent("https://api.themoviedb.org/3/trending/tv/day?language=en-US")),
+
+                        Padding(
+                          padding: const EdgeInsets.only(left: 2),
+                          child: Container(alignment: Alignment.topLeft
+                              ,child: Text("People",style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',fontSize: 20))
+                          ),
+                        ),
+
+                        _returnContent(ApiService().fetchContent("https://api.themoviedb.org/3/trending/person/day?language=en-US"))
+
+                      ],
+                    ) : (currentIndex == 1) ? Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8),
+                          child: Container(alignment: Alignment.topLeft
+                              ,child: Text("Now Playing",style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',fontSize: 20))
+                          ),
+                        ),
+
+                        _returnContent(ApiService().fetchContent("https://api.themoviedb.org/3/movie/now_playing?language=en-US")),
+
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8),
+                          child: Container(alignment: Alignment.topLeft
+                              ,child: Text("Popular",style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',fontSize: 20))
+                          ),
+                        ),
+
+                        _returnContent(ApiService().fetchContent("https://api.themoviedb.org/3/movie/popular?language=en-US")),
+
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8),
+                          child: Container(alignment: Alignment.topLeft
+                              ,child: Text("Top Rated",style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',fontSize: 20))
+                          ),
+                        ),
+
+                        _returnContent(ApiService().fetchContent("https://api.themoviedb.org/3/movie/top_rated?language=en-US")),
+
+                        Padding(
+                          padding: const EdgeInsets.only(left: 2),
+                          child: Container(alignment: Alignment.topLeft
+                              ,child: Text("Upcoming",style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',fontSize: 20))
+                          ),
+                        ),
+
+                        _returnContent(ApiService().fetchContent("https://api.themoviedb.org/3/movie/upcoming?language=en-US"))
+
+                      ],
+                    ) : Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8),
+                          child: Container(alignment: Alignment.topLeft
+                              ,child: Text("Airing today",style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',fontSize: 20))
+                          ),
+                        ),
+
+                        _returnContent(ApiService().fetchContent("https://api.themoviedb.org/3/tv/airing_today?language=en-US")),
+
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8),
+                          child: Container(alignment: Alignment.topLeft
+                              ,child: Text("On The Air",style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',fontSize: 20))
+                          ),
+                        ),
+
+                        _returnContent(ApiService().fetchContent("https://api.themoviedb.org/3/tv/on_the_air?language=en-US")),
+
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8),
+                          child: Container(alignment: Alignment.topLeft
+                              ,child: Text("Popular",style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',fontSize: 20))
+                          ),
+                        ),
+
+                        _returnContent(ApiService().fetchContent("https://api.themoviedb.org/3/tv/popular?language=en-US")),
+
+                        Padding(
+                          padding: const EdgeInsets.only(left: 2),
+                          child: Container(alignment: Alignment.topLeft
+                              ,child: Text("Top Rated",style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',fontSize: 20))
+                          ),
+                        ),
+
+                        _returnContent(ApiService().fetchContent("https://api.themoviedb.org/3/tv/top_rated?language=en-US"))
+
+                      ],
+                    )
                   ),
                 ),
-                onChanged: (value) {
-                  currentIndex == 0 ? searchContent(value,'https://api.themoviedb.org/3/search/multi') :
-                      currentIndex == 1 ? searchContent(value,'https://api.themoviedb.org/3/search/movie') :
-                      searchContent(value,'https://api.themoviedb.org/3/search/tv');
-                },
               ),
-            ),
-            
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: SizedBox(
-                width: MediaQuery.of(context).size.width,
-                child: AnimatedToggleSwitch.size(
-                  indicatorSize: Size(100, 40),
-                  animationCurve: Curves.easeInOut,
-                    current: currentIndex,
-                    values: [0,1,2],
-                padding: EdgeInsets.only(left: 20,right: 10,top: 5,bottom: 5),
-                style: ToggleStyle(
-                  indicatorBorderRadius: BorderRadius.circular(15),
-                  indicatorColor: AppDesign().primaryAccent,
-                  borderRadius: BorderRadius.circular(15),
-                  backgroundColor: Colors.grey.shade800,
-                  borderColor: AppDesign().bgColor
-                ),
-                height: 50,
-                spacing: 5,
-                onChanged: (value) {
-                  setState(() {
-                    currentIndex = value;
-                  });
-                },
-                iconBuilder: (value) {
-                    String text;
-                  switch(value){
-                    case 0:
-                      text = 'Trending';
-                      break;
-
-                    case 1:
-                      text = 'Movies';
-                      break;
-
-                    case 2:
-                      text = 'Tv';
-                      break;
-
-                    default:
-                       text = '';
-                       break;
-                  }
-                  return SizedBox(
-                    width: 150,
-                    child: Center(child: Text(text,style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto'))),
-                  );
-                }),
-              ),
-            ),
-
-            Expanded(
-              child: Container(
-                height: MediaQuery.of(context).size.height,
-                decoration: BoxDecoration(
-                  color: AppDesign().bgColor
-                ),
-                child: _isSearching ? _buildSearchResults() : SingleChildScrollView(
-                  scrollDirection: Axis.vertical,
-                  child: currentIndex == 0 ? Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8),
-                        child: Container(alignment: Alignment.topLeft
-                            ,child: Text("All",style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',fontSize: 20))
-                        ),
-                      ),
-                  
-                      _returnContent(ApiService().fetchContent("https://api.themoviedb.org/3/trending/all/day?language=en-US")),
-                  
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8),
-                        child: Container(alignment: Alignment.topLeft
-                            ,child: Text("Movies",style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',fontSize: 20))
-                        ),
-                      ),
-                  
-                      _returnContent(ApiService().fetchContent("https://api.themoviedb.org/3/trending/movie/day?language=en-US")),
-                  
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8),
-                        child: Container(alignment: Alignment.topLeft
-                            ,child: Text("Tv",style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',fontSize: 20))
-                        ),
-                      ),
-                  
-                      _returnContent(ApiService().fetchContent("https://api.themoviedb.org/3/trending/tv/day?language=en-US")),
-                  
-                      Padding(
-                        padding: const EdgeInsets.only(left: 2),
-                        child: Container(alignment: Alignment.topLeft
-                            ,child: Text("People",style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',fontSize: 20))
-                        ),
-                      ),
-                  
-                      _returnContent(ApiService().fetchContent("https://api.themoviedb.org/3/trending/person/day?language=en-US"))
-                  
-                    ],
-                  ) : (currentIndex == 1) ? Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8),
-                        child: Container(alignment: Alignment.topLeft
-                            ,child: Text("Now Playing",style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',fontSize: 20))
-                        ),
-                      ),
-
-                      _returnContent(ApiService().fetchContent("https://api.themoviedb.org/3/movie/now_playing?language=en-US")),
-
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8),
-                        child: Container(alignment: Alignment.topLeft
-                            ,child: Text("Popular",style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',fontSize: 20))
-                        ),
-                      ),
-
-                      _returnContent(ApiService().fetchContent("https://api.themoviedb.org/3/movie/popular?language=en-US")),
-
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8),
-                        child: Container(alignment: Alignment.topLeft
-                            ,child: Text("Top Rated",style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',fontSize: 20))
-                        ),
-                      ),
-
-                      _returnContent(ApiService().fetchContent("https://api.themoviedb.org/3/movie/top_rated?language=en-US")),
-
-                      Padding(
-                        padding: const EdgeInsets.only(left: 2),
-                        child: Container(alignment: Alignment.topLeft
-                            ,child: Text("Upcoming",style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',fontSize: 20))
-                        ),
-                      ),
-
-                      _returnContent(ApiService().fetchContent("https://api.themoviedb.org/3/movie/upcoming?language=en-US"))
-
-                    ],
-                  ) : Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8),
-                        child: Container(alignment: Alignment.topLeft
-                            ,child: Text("Airing today",style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',fontSize: 20))
-                        ),
-                      ),
-
-                      _returnContent(ApiService().fetchContent("https://api.themoviedb.org/3/tv/airing_today?language=en-US")),
-
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8),
-                        child: Container(alignment: Alignment.topLeft
-                            ,child: Text("On The Air",style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',fontSize: 20))
-                        ),
-                      ),
-
-                      _returnContent(ApiService().fetchContent("https://api.themoviedb.org/3/tv/on_the_air?language=en-US")),
-
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8),
-                        child: Container(alignment: Alignment.topLeft
-                            ,child: Text("Popular",style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',fontSize: 20))
-                        ),
-                      ),
-
-                      _returnContent(ApiService().fetchContent("https://api.themoviedb.org/3/tv/popular?language=en-US")),
-
-                      Padding(
-                        padding: const EdgeInsets.only(left: 2),
-                        child: Container(alignment: Alignment.topLeft
-                            ,child: Text("Top Rated",style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',fontSize: 20))
-                        ),
-                      ),
-
-                      _returnContent(ApiService().fetchContent("https://api.themoviedb.org/3/tv/top_rated?language=en-US"))
-
-                    ],
-                  )
-                ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -331,7 +335,7 @@ class _HomePageState extends State<HomePage> {
             );
 
           }else if(snapshot.hasError){
-            return Text("Data fetching error");
+            return Text("Data fetching error",style: TextStyle(color: Colors.white));
           }else if(snapshot.hasData){
             trendingContentArray = snapshot.data!;
             List trendingResults = trendingContentArray['results'];

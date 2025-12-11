@@ -14,6 +14,16 @@ class SharedPreferenceHelper{
     prefs.setString(userNameKey, name);
   }
 
+  Future<void> removeUsername() async{
+    final prefs = await SharedPreferences.getInstance();
+    prefs.remove(userNameKey);
+  }
+
+  Future<void> removePassword() async{
+    final prefs = await SharedPreferences.getInstance();
+    prefs.remove(passwordKey);
+  }
+
   Future<String?> getUsername() async{
     final prefs = await SharedPreferences.getInstance();
     var name = prefs.getString(userNameKey);

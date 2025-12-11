@@ -208,11 +208,19 @@ class DatabaseOptions{
     }
   }
 
-  Future<int> deleteUserAccountWithGoogle(BuildContext context) async{
+  Future<GoogleSignInAccount?> authenticateUser(BuildContext context) async{
     try{
       final googleSignIn = GoogleSignIn.instance;
       final googleUser = await googleSignIn.authenticate();
+      return googleUser;
+    }catch (e){
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Something went wrong $e")));
+    }
+    return null;
+  }
 
+  Future<int> deleteUserAccountWithGoogle(BuildContext context,GoogleSignInAccount googleUser) async{
+    try{
       final googleAuth = googleUser.authentication;
 
       final credential = GoogleAuthProvider.credential(
@@ -228,6 +236,7 @@ class DatabaseOptions{
 
       await user.delete();
       return 1;
+
     }catch (e){
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Something went wrong $e")));
       print('Someting went wrong deleting user account');

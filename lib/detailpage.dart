@@ -40,8 +40,8 @@ class _DetailPageState extends State<DetailPage> {
   @override
   void initState() {
     super.initState();
-    getUserId();
-    getMediaList();
+    _getUserId();
+    _getMediaList();
     isVideoPlaying = false;
     if(type == 'person'){
       detailsUrl = ApiService().fetchDetails('https://api.themoviedb.org/3/$type/$id?language=en-US&append_to_response=images,movie_credits,tv_credits');
@@ -50,14 +50,14 @@ class _DetailPageState extends State<DetailPage> {
     }
   }
   
-  void getUserId() async{
+  void _getUserId() async{
     userId = await SharedPreferenceHelper().getUserId();
     setState(() {
 
     });
   }
 
-  Future<void> getMediaList() async{
+  Future<void> _getMediaList() async{
     addedMedia = await SharedPreferenceHelper().getMedia();
     print("Fetched addedMedia list $addedMedia");
     setState(() {});
@@ -108,9 +108,23 @@ class _DetailPageState extends State<DetailPage> {
               final String posterPath;
               final String department;
               type == 'person' ? department = detailsArray['known_for_department'] ?? 'Not available' : department = '';
-              (type == 'movie' || type == 'tv') ? posterPath = '$imageBaseUrl${detailsArray['poster_path']}' : posterPath = '$imageBaseUrl${detailsArray['profile_path']}';
+              if(type == 'movie' || type == 'tv'){
+                if(detailsArray['poster_path']!=null){
+                  posterPath = '$imageBaseUrl${detailsArray['poster_path']}';
+                  print(posterPath) ;
+                }else if(detailsArray['still_path']!=null){
+                  posterPath = '$imageBaseUrl${detailsArray['still_path']}';
+                  print(posterPath);
+                }else{
+                  posterPath = defaultShowUrl;
+                  print(posterPath);
+                }
+              }else{
+                posterPath =  '$imageBaseUrl${detailsArray['profile_path']}';
+              }
+              // (type == 'movie' || type == 'tv') ? (detailsArray['poster_path']!=null) ? posterPath = '$imageBaseUrl${detailsArray['poster_path']}' : posterPath = '$imageBaseUrl${detailsArray['still_path']}' : posterPath = '$imageBaseUrl${detailsArray['profile_path']}';
               final String title;
-              type == 'movie' ? title = detailsArray['title'] : title = detailsArray['name'] ?? 'Not available';
+              type == 'movie' ? title = detailsArray['title'] ?? '' : title = detailsArray['name'] ?? 'Not available';
               final String releaseDate;
               type == 'movie' ? releaseDate = detailsArray['release_date'].toString() : type == 'tv' ? releaseDate = detailsArray['first_air_date'].toString() : releaseDate = '';
               final String revenue;
@@ -121,10 +135,10 @@ class _DetailPageState extends State<DetailPage> {
               final List cast = (type == 'movie' || type == 'tv') ? (detailsArray['credits']?['cast'] ?? []) : (detailsArray['movie_credits']?['cast'] ?? []);
               final List tvCredits = (type == 'person') ? (detailsArray['tv_credits']?['cast'] ?? []) : [];
               final List similar = (type == 'movie' || type == 'tv') ? (detailsArray['similar']?['results'] ?? []) : [];
-              final String voteCount;
-              (type == 'movie' || type == 'tv' ) ? voteCount = detailsArray['vote_count'].toString() : voteCount = '';
-              final String status;
-              (type == 'movie' || type == 'tv' ) ? status = detailsArray['status'] : status = '';
+              // final String voteCount;
+              // (type == 'movie' || type == 'tv' ) ? voteCount = detailsArray['vote_count'].toString() : voteCount = '';
+              // final String status;
+              // (type == 'movie' || type == 'tv' ) ? status = detailsArray['status'] : status = '';
               final String overView;
               (type == 'movie' || type == 'tv' ) ? overView  = detailsArray['overview'] : overView = detailsArray['biography'] ?? 'No biography available';
               final id = detailsArray['id'];
@@ -148,224 +162,267 @@ class _DetailPageState extends State<DetailPage> {
                 budget = detailsArray['budget'].toString();
               }
               // final video = detailsArray['video'];
-              return Container(
-                decoration: BoxDecoration(color:  AppDesign().bgColor),
-                width: w,
-                child: Stack(
-                  children: [
-                    (isVideoPlaying == true && key!='') ? YoutubePlayerBuilder(player: YoutubePlayer(
-                controller: _youtubePlayerController,
-                    aspectRatio: 16/10,
-                    width: MediaQuery.of(context).size.width,
-                    progressIndicatorColor: AppDesign().textColor,
-                    showVideoProgressIndicator: true),
-                  builder: (context,player){
-                    return Column(
-                      children: [
-                        SizedBox(height: 0,width: 0),
-                        player,
-                        SizedBox(height: 0,width: 0),
-                      ],
-                    );
-                  }) : Container(
-                      height: 250,
-                      width: w,
-                      decoration: BoxDecoration(
-                          color: AppDesign().bgColor,
+              return Expanded(
+                child: Container(
+                  decoration: BoxDecoration(color:  AppDesign().bgColor),
+                  width: w,
+                  child: Stack(
+                    children: [
+                      (isVideoPlaying == true && key!='') ? YoutubePlayerBuilder(player: YoutubePlayer(
+                  controller: _youtubePlayerController,
+                      aspectRatio: 16/10,
+                      width: MediaQuery.of(context).size.width,
+                      progressIndicatorColor: AppDesign().textColor,
+                      showVideoProgressIndicator: true),
+                    builder: (context,player){
+                      return Column(
+                        children: [
+                          SizedBox(height: 0,width: 0),
+                          player,
+                          SizedBox(height: 0,width: 0),
+                        ],
+                      );
+                    }) : Container(
+                        height: 250,
+                        width: w,
+                        decoration: BoxDecoration(
+                            color: AppDesign().bgColor,
+                        ),
+                        child: ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: Image.network(posterPath,fit: BoxFit.fill,errorBuilder: (context, error, stackTrace) {
+                              return (type == 'movie' || type == 'tv') ? Image.network(defaultShowUrl,fit: BoxFit.cover) : Image.network(defaultImageUrl,fit: BoxFit.cover);
+                            },)),
                       ),
-                      child: ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: Image.network(posterPath,fit: BoxFit.fill,errorBuilder: (context, error, stackTrace) {
-                            return (type == 'movie' || type == 'tv') ? Image.network(defaultShowUrl,fit: BoxFit.cover) : Image.network(defaultImageUrl,fit: BoxFit.cover);
-                          },)),
-                    ),
 
-                    Positioned(
-                        top : 20,
-                        left: 15,
+                      Positioned(
+                          top : 20,
+                          left: 15,
+                          child: IconButton(onPressed: (){
+                            Navigator.pop(context);
+                          }, icon: CircleAvatar(backgroundColor: Colors.black,child: Icon(Icons.arrow_back_rounded,color: Colors.white)))),
+
+
+                      (type == 'movie' || type == 'tv') ? isVideoPlaying ? SizedBox(height: 0) : Positioned(
+                        top: 100,
+                        left: 150,
                         child: IconButton(onPressed: (){
-                          Navigator.pop(context);
-                        }, icon: CircleAvatar(backgroundColor: Colors.black,child: Icon(Icons.arrow_back_rounded,color: Colors.white)))),
-
-
-                    (type == 'movie' || type == 'tv') ? isVideoPlaying ? SizedBox(height: 0) : Positioned(
-                      top: 100,
-                      left: 150,
-                      child: IconButton(onPressed: (){
-                        if(key==''){
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Trailer not found")));
-                        }
-
-                        if(key!='') {
-                          _youtubePlayerController = YoutubePlayerController(
-                              initialVideoId: key,
-                              flags: YoutubePlayerFlags(
-                                mute: false,
-                                forceHD: true,
-                                autoPlay: false,
-                                showLiveFullscreenButton: true,
-                              ));
-
-                          setState(() {
-                            isVideoPlaying = true;
-                          });
-                        }
-                      }, icon: CircleAvatar(backgroundColor: Colors.black,radius: 25,child: Icon(Icons.play_arrow,size: 50,color: Colors.white))),
-                    ) : Text(''),
-
-                    Positioned(
-                        top : 20,
-                        left: 300,
-                        child: IconButton(onPressed: () async{
-                          try{
-                            final params = ShareParams(
-                                title: "Share anything from via CineTrack",
-                                uri: Uri.parse("https://www.youtube.com/watch?v=$key")
-                            );
-
-                            final result = await SharePlus.instance.share(params);
-                          } catch (e){
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Something went wrong $e")));
+                          if(key==''){
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Trailer not found")));
                           }
 
-                        }, icon: CircleAvatar(backgroundColor: Colors.black,child: Icon(Icons.share,color: Colors.white)))),
+                          if(key!='') {
+                            _youtubePlayerController = YoutubePlayerController(
+                                initialVideoId: key,
+                                flags: YoutubePlayerFlags(
+                                  mute: false,
+                                  forceHD: true,
+                                  autoPlay: false,
+                                  showLiveFullscreenButton: true,
+                                ));
 
-                    Padding(
-                      padding: EdgeInsets.only(
-                        top: w / 1.5,
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                      ),
-                      child: Container(
-                        width: w,
-                        height: h,
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade800,
-                          borderRadius: BorderRadiusGeometry.only(
-                            topRight: Radius.circular(40),
-                            topLeft: Radius.circular(40),
-                          ),
+                            setState(() {
+                              isVideoPlaying = true;
+                            });
+                          }
+                        }, icon: CircleAvatar(backgroundColor: Colors.black,radius: 25,child: Icon(Icons.play_arrow,size: 50,color: Colors.white))),
+                      ) : Text(''),
+
+                      (type == 'movie' || type == 'tv') ? Positioned(
+                          top : 20,
+                          left: 300,
+                          child: IconButton(onPressed: () async{
+                            try{
+                              final params = ShareParams(
+                                  title: "Share anything from via CineTrack",
+                                  uri: Uri.parse("https://www.youtube.com/watch?v=$key")
+                              );
+
+                              final result = await SharePlus.instance.share(params);
+                            } catch (e){
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Something went wrong $e")));
+                            }
+
+                          }, icon: CircleAvatar(backgroundColor: Colors.black,child: Icon(Icons.share,color: Colors.white)))) : SizedBox(height: 0,width: 0),
+
+                      Padding(
+                        padding: EdgeInsets.only(
+                          top: w / 1.5,
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
                         ),
-                        child: SingleChildScrollView(
-                          child: Padding(
-                            padding: const EdgeInsets.only(top: 10,left: 8,right: 8,bottom: 20),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Text(title,style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',fontWeight: FontWeight.bold,fontSize: 18)),
-                                Text(type == 'movie' ? 'Release Date : $releaseDate' : (type == 'tv') ? 'First Air Date : $releaseDate' : 'Department : $department' ,style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',fontWeight: FontWeight.normal,fontSize: 18)),
-                                type == 'movie' ? Text('Revenue : $revenue',style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',fontWeight: FontWeight.normal,fontSize: 18)) : type == 'tv' ? Text('Total Seasons : $totalSeasons',style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',fontWeight: FontWeight.normal,fontSize: 18)) : Text(''),
-                                (type == 'movie' || type == 'tv') ? SizedBox(height: 20) : SizedBox(height: 0),
-                                (type == 'movie' || type == 'tv') ?
-                                    SizedBox(
-                                      width: MediaQuery.of(context).size.width,
-                                      child: ElevatedButton(onPressed: () async {
-                                        setState(() {
-                                          isAdded = !isAdded;
-                                        });
+                        child: Container(
+                          width: w,
+                          height: h,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade800,
+                            borderRadius: BorderRadiusGeometry.only(
+                              topRight: Radius.circular(40),
+                              topLeft: Radius.circular(40),
+                            ),
+                          ),
+                          child: SingleChildScrollView(
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 10,left: 8,right: 8,bottom: 20),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Text(title,style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',fontWeight: FontWeight.bold,fontSize: 18)),
+                                  Text(type == 'movie' ? 'Release Date : $releaseDate' : (type == 'tv') ? 'First Air Date : $releaseDate' : 'Department : $department' ,style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',fontWeight: FontWeight.normal,fontSize: 18)),
+                                  type == 'movie' ? Text('Revenue : $revenue',style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',fontWeight: FontWeight.normal,fontSize: 18)) : type == 'tv' ? Text('Total Seasons : $totalSeasons',style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',fontWeight: FontWeight.normal,fontSize: 18)) : Text(''),
+                                  (type == 'movie' || type == 'tv') ? SizedBox(height: 20) : SizedBox(height: 0),
+                                  (type == 'movie' || type == 'tv') ?
+                                      SizedBox(
+                                        width: MediaQuery.of(context).size.width,
+                                        child: ElevatedButton(onPressed: () async {
+                                          setState(() {
+                                            isAdded = !isAdded;
+                                          });
 
-                                        setState(() {
-                                          isloading = true;
-                                        });
+                                          setState(() {
+                                            isloading = true;
+                                          });
 
-                                        if(isAdded == true){
-                                          await DatabaseOptions().addToWatchlist(userId!,id.toString(),title,type,posterPath);
-                                          await DatabaseOptions().addToMedia(userId!, id.toString());
+                                          if(isAdded == true){
+                                            await DatabaseOptions().addToWatchlist(userId!,id.toString(),title,type,posterPath);
+                                            await DatabaseOptions().addToMedia(userId!, id.toString());
 
-                                          addedMedia!.add(id.toString());
-                                          print("Added media is $addedMedia");
-                                          await SharedPreferenceHelper().setMedia(addedMedia!);
-                                        }else{
-                                          await DatabaseOptions().removeFromWatchlist(userId!, id.toString(), type);
-                                          await DatabaseOptions().removeToMedia(userId!, id.toString());
+                                            addedMedia!.add(id.toString());
+                                            print("Added media is $addedMedia");
+                                            await SharedPreferenceHelper().setMedia(addedMedia!);
+                                          }else{
+                                            await DatabaseOptions().removeFromWatchlist(userId!, id.toString(), type);
+                                            await DatabaseOptions().removeToMedia(userId!, id.toString());
 
-                                          addedMedia!.remove(id.toString());
-                                          print("Removed media is $addedMedia");
-                                          await SharedPreferenceHelper().setMedia(addedMedia!);
-                                        }
+                                            addedMedia!.remove(id.toString());
+                                            print("Removed media is $addedMedia");
+                                            await SharedPreferenceHelper().setMedia(addedMedia!);
+                                          }
 
-                                        setState(() {
-                                          isloading = false;
-                                        });
-                                      },
-                                          style: ElevatedButton.styleFrom(
-                                            padding: EdgeInsets.all(10),
-                                            backgroundColor: AppDesign().primaryAccent,
-                                          ),
-                                          child: Row(
-                                            spacing: 5,
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            children: isloading ? [
-                                              Center(child: CircularProgressIndicator(color: Colors.black))
-                                            ] : [
-                                              isAdded ? Icon(Icons.check,color: Colors.white) : Icon(Icons.add,color: Colors.white),
-                                              Text(isAdded ? "Added to watchlist" : "Add to watchlist",style: TextStyle(color: Colors.white,fontFamily: 'Roboto'))
-                                            ],
-                                          )),
+                                          setState(() {
+                                            isloading = false;
+                                          });
+                                        },
+                                            style: ElevatedButton.styleFrom(
+                                              padding: EdgeInsets.all(10),
+                                              backgroundColor: AppDesign().primaryAccent,
+                                            ),
+                                            child: Row(
+                                              spacing: 5,
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: isloading ? [
+                                                Center(child: CircularProgressIndicator(color: Colors.black))
+                                              ] : [
+                                                isAdded ? Icon(Icons.check,color: Colors.white) : Icon(Icons.add,color: Colors.white),
+                                                Text(isAdded ? "Added to watchlist" : "Add to watchlist",style: TextStyle(color: Colors.white,fontFamily: 'Roboto'))
+                                              ],
+                                            )),
+                                      ) : SizedBox(height: 0),
+
+                                  (type == 'movie' || type == 'tv') ? Align(
+                                    alignment: Alignment.centerLeft,
+                                      child: Text("Overview",style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',
+                                          fontWeight: FontWeight.bold,fontSize: 18))) : (overView == 'No biography available') ? SizedBox(height: 0) : Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: Text("Biography",style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',
+                                          fontWeight: FontWeight.bold,fontSize: 18))),
+
+                                  Align(
+                                    alignment: Alignment.centerLeft,
+                                      child: Text(overView,style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',fontWeight: FontWeight.normal,fontSize: 12))),
+
+                                  SizedBox(height: 10),
+
+                                  cast.isNotEmpty ? (type == 'movie' || type == 'tv' ) ? Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: Text("Cast",style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',
+                                          fontWeight: FontWeight.bold,fontSize: 18))) : Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: Text("Movie Cast",style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',
+                                          fontWeight: FontWeight.bold,fontSize: 18))) : SizedBox(height: 0),
+
+                                    cast.isNotEmpty ? (type == 'movie' || type == 'tv') ? SizedBox(
+                                    height: 100,
+                                    child: ListView.builder(
+                                      itemCount: cast.length,
+                                      scrollDirection: Axis.horizontal,
+                                      itemBuilder: (context, index) {
+                                      return SizedBox(
+                                        width: 120,
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.start,
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          spacing: 1.5,
+                                          children: [
+                                            ClipRRect(
+                                                borderRadius: BorderRadius.circular(25),
+                                                  child: Image.network('$imageBaseUrl${cast[index]['profile_path']}',fit: BoxFit.cover,height: 50,width: 50,errorBuilder: (context, error, stackTrace) {
+                                                    return (type == 'movie' || type == 'tv') ? Image.network(defaultShowUrl,fit: BoxFit.cover,height: 50,width: 50,color: Colors.white) : Image.network(defaultImageUrl,fit: BoxFit.cover,height: 50,width: 50,color: Colors.white);
+                                                  })),
+                                            Text(cast[index]['name'],style: TextStyle(color: AppDesign().textColor,fontWeight: FontWeight.normal,fontSize: 12))
+                                          ],
+                                        ),
+                                      );
+                                    }),
+                                  ) : SizedBox(
+                                      height: 120,
+                                      child: ListView.builder(
+                                          itemCount: cast.length,
+                                          scrollDirection: Axis.horizontal,
+                                          itemBuilder: (context, index) {
+                                            return Padding(
+                                              padding: const EdgeInsets.only(right: 5),
+                                              child: GestureDetector(
+                                                onTap: (){
+                                                  Navigator.push(context, MaterialPageRoute(builder: (context) => DetailPage(id: cast[index]['id'].toString(), type: 'movie')));
+                                                },
+                                                child: SizedBox(
+                                                  width: 200,
+                                                  height: 120,
+                                                  child: Column(
+                                                    mainAxisAlignment: MainAxisAlignment.center,
+                                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                                    spacing: 1.5,
+                                                    children: [
+                                                      SizedBox(
+                                                        width : 200,
+                                                        child: ClipRRect(
+                                                            borderRadius: BorderRadius.circular(5),
+                                                            child: Image.network('$imageBaseUrl${cast[index]['poster_path']}',fit: BoxFit.fill,height: 100,width: 50,errorBuilder: (context, error, stackTrace) {
+                                                              return Image.network(defaultImageUrl,fit: BoxFit.cover,height: 50,width: 50,color: Colors.white);
+                                                            })),
+                                                      ),
+                                                      Text(cast[index]['title'],style: TextStyle(color: AppDesign().textColor,fontWeight: FontWeight.normal,fontSize: 12),maxLines: 1)
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            );
+                                          }),
                                     ) : SizedBox(height: 0),
 
-                                (type == 'movie' || type == 'tv') ? Align(
-                                  alignment: Alignment.centerLeft,
-                                    child: Text("Overview",style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',
-                                        fontWeight: FontWeight.bold,fontSize: 18))) : (overView == 'No biography available') ? SizedBox(height: 0) : Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Text("Biography",style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',
-                                        fontWeight: FontWeight.bold,fontSize: 18))),
+                                  (type == 'person' && tvCredits.isNotEmpty) ? Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: Text("Tv Cast",style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',
+                                          fontWeight: FontWeight.bold,fontSize: 18))) : SizedBox(height: 0),
 
-                                Align(
-                                  alignment: Alignment.centerLeft,
-                                    child: Text(overView,style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',fontWeight: FontWeight.normal,fontSize: 12))),
-
-                                SizedBox(height: 10),
-
-                                cast.isNotEmpty ? (type == 'movie' || type == 'tv' ) ? Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Text("Cast",style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',
-                                        fontWeight: FontWeight.bold,fontSize: 18))) : Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Text("Movie Cast",style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',
-                                        fontWeight: FontWeight.bold,fontSize: 18))) : SizedBox(height: 0),
-
-                                  cast.isNotEmpty ? (type == 'movie' || type == 'tv') ? SizedBox(
-                                  height: 100,
-                                  child: ListView.builder(
-                                    itemCount: cast.length,
-                                    scrollDirection: Axis.horizontal,
-                                    itemBuilder: (context, index) {
-                                    return SizedBox(
-                                      width: 120,
-                                      child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.start,
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        spacing: 1.5,
-                                        children: [
-                                          ClipRRect(
-                                              borderRadius: BorderRadius.circular(25),
-                                                child: Image.network('$imageBaseUrl${cast[index]['profile_path']}',fit: BoxFit.cover,height: 50,width: 50,errorBuilder: (context, error, stackTrace) {
-                                                  return (type == 'movie' || type == 'tv') ? Image.network(defaultShowUrl,fit: BoxFit.cover,height: 50,width: 50,color: Colors.white) : Image.network(defaultImageUrl,fit: BoxFit.cover,height: 50,width: 50,color: Colors.white);
-                                                })),
-                                          Text(cast[index]['name'],style: TextStyle(color: AppDesign().textColor,fontWeight: FontWeight.normal,fontSize: 12))
-                                        ],
-                                      ),
-                                    );
-                                  }),
-                                ) : SizedBox(
-                                    height: 120,
+                                  (type == 'person' && tvCredits.isNotEmpty) ? SizedBox(
+                                    height: 150,
                                     child: ListView.builder(
-                                        itemCount: cast.length,
+                                        itemCount: tvCredits.length,
                                         scrollDirection: Axis.horizontal,
                                         itemBuilder: (context, index) {
                                           return Padding(
                                             padding: const EdgeInsets.only(right: 5),
                                             child: GestureDetector(
                                               onTap: (){
-                                                Navigator.push(context, MaterialPageRoute(builder: (context) => DetailPage(id: cast[index]['id'].toString(), type: 'movie')));
+                                                Navigator.push(context, MaterialPageRoute(builder: (context) => DetailPage(id: tvCredits[index]['id'].toString(), type: 'tv')));
                                               },
                                               child: SizedBox(
                                                 width: 200,
-                                                height: 120,
+                                                height: 150,
                                                 child: Column(
                                                   mainAxisAlignment: MainAxisAlignment.center,
                                                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -373,13 +430,14 @@ class _DetailPageState extends State<DetailPage> {
                                                   children: [
                                                     SizedBox(
                                                       width : 200,
+                                                      height: 120,
                                                       child: ClipRRect(
                                                           borderRadius: BorderRadius.circular(5),
-                                                          child: Image.network('$imageBaseUrl${cast[index]['poster_path']}',fit: BoxFit.fill,height: 100,width: 50,errorBuilder: (context, error, stackTrace) {
+                                                          child: Image.network('$imageBaseUrl${tvCredits[index]['poster_path']}',fit: BoxFit.fill,height: 50,width: 50,errorBuilder: (context, error, stackTrace) {
                                                             return Image.network(defaultImageUrl,fit: BoxFit.cover,height: 50,width: 50,color: Colors.white);
                                                           })),
                                                     ),
-                                                    Text(cast[index]['title'],style: TextStyle(color: AppDesign().textColor,fontWeight: FontWeight.normal,fontSize: 12),maxLines: 1)
+                                                    Text(tvCredits[index]['name'],style: TextStyle(color: AppDesign().textColor,fontWeight: FontWeight.normal,fontSize: 12),maxLines: 1)
                                                   ],
                                                 ),
                                               ),
@@ -388,187 +446,145 @@ class _DetailPageState extends State<DetailPage> {
                                         }),
                                   ) : SizedBox(height: 0),
 
-                                (type == 'person' && tvCredits.isNotEmpty) ? Align(
+                                  (type == 'movie' || type == 'tv') ? flatRate.isNotEmpty ? Align(
                                     alignment: Alignment.centerLeft,
-                                    child: Text("Tv Cast",style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',
-                                        fontWeight: FontWeight.bold,fontSize: 18))) : SizedBox(height: 0),
+                                    child: Text("Available On",style: TextStyle(color: AppDesign().textColor,
+                                        fontFamily: 'Roboto',fontSize: 20,fontWeight: FontWeight.bold)),
+                                  ) : SizedBox(height: 0) : SizedBox(height: 0),
 
-                                (type == 'person' && tvCredits.isNotEmpty) ? SizedBox(
-                                  height: 150,
-                                  child: ListView.builder(
-                                      itemCount: tvCredits.length,
-                                      scrollDirection: Axis.horizontal,
+                                  (type == 'movie' || type == 'tv') ? flatRate.isNotEmpty ? Container(
+                                    height: 200,
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey.shade800,
+                                    ),
+                                    child: ListView.builder(
+                                      itemCount:  flatRate.length,
+                                      padding: EdgeInsets.only(bottom: 5),
                                       itemBuilder: (context, index) {
                                         return Padding(
-                                          padding: const EdgeInsets.only(right: 5),
-                                          child: GestureDetector(
-                                            onTap: (){
-                                              Navigator.push(context, MaterialPageRoute(builder: (context) => DetailPage(id: tvCredits[index]['id'].toString(), type: 'tv')));
-                                            },
-                                            child: SizedBox(
-                                              width: 200,
-                                              height: 150,
-                                              child: Column(
-                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                crossAxisAlignment: CrossAxisAlignment.center,
-                                                spacing: 1.5,
-                                                children: [
-                                                  SizedBox(
-                                                    width : 200,
-                                                    height: 120,
-                                                    child: ClipRRect(
-                                                        borderRadius: BorderRadius.circular(5),
-                                                        child: Image.network('$imageBaseUrl${tvCredits[index]['poster_path']}',fit: BoxFit.fill,height: 50,width: 50,errorBuilder: (context, error, stackTrace) {
-                                                          return Image.network(defaultImageUrl,fit: BoxFit.cover,height: 50,width: 50,color: Colors.white);
-                                                        })),
+                                          padding: const EdgeInsets.all(8),
+                                          child: Container(
+                                            padding: EdgeInsets.only(right: 10,bottom: 5),
+                                            decoration: BoxDecoration(
+                                                color: AppDesign().bgColor,
+                                                borderRadius: BorderRadius.circular(10)
+                                            ),
+                                            width: MediaQuery.of(context).size.width,
+                                            height: 100,
+                                            child: Row(
+                                              mainAxisAlignment: MainAxisAlignment.start,
+                                              crossAxisAlignment: CrossAxisAlignment.center,
+                                              children: [
+                                                Card(
+                                                  elevation: 5,
+                                                  shape: RoundedRectangleBorder(
+                                                      borderRadius: BorderRadius.circular(10)
                                                   ),
-                                                  Text(tvCredits[index]['name'],style: TextStyle(color: AppDesign().textColor,fontWeight: FontWeight.normal,fontSize: 12),maxLines: 1)
-                                                ],
-                                              ),
+                                                  margin: EdgeInsets.all(5),
+                                                  child: ClipRRect(
+                                                      borderRadius: BorderRadius.circular(10),
+                                                      child: Image.network('$imageBaseUrl${flatRate[index]['logo_path']}',fit: BoxFit.fill,errorBuilder: (context, error, stackTrace) {
+                                                        return Image.network(defaultShowUrl,fit: BoxFit.fill);
+                                                      })),
+                                                ),
+
+                                                Expanded(
+                                                  child: Text(flatRate[index]['provider_name'],
+                                                      style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',
+                                                          fontSize: 18,fontWeight: FontWeight.bold)),
+                                                ),
+
+                                                Expanded(
+                                                  child: Align(
+                                                    alignment: Alignment.centerRight,
+                                                    child: ElevatedButton(onPressed: () async{
+                                                      if((link!='') && await(canLaunchUrl(Uri.parse(link)))){
+                                                        await launchUrl(Uri.parse(link),mode: LaunchMode.externalApplication);
+                                                      }else{
+                                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Url cannot be launched')));
+                                                      }
+                                                    },
+                                                        style: ElevatedButton.styleFrom(
+                                                          backgroundColor: AppDesign().primaryAccent,
+                                                        ),
+                                                        child: Icon(Icons.arrow_circle_right,color: Colors.white)),
+                                                  ),
+                                                )
+                                              ],
                                             ),
                                           ),
                                         );
-                                      }),
-                                ) : SizedBox(height: 0),
+                                      },),
+                                  ) : SizedBox(height: 0) : SizedBox(height: 0),
 
-                                (type == 'movie' || type == 'tv') ? flatRate.isNotEmpty ? Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Text("Available On",style: TextStyle(color: AppDesign().textColor,
-                                      fontFamily: 'Roboto',fontSize: 20,fontWeight: FontWeight.bold)),
-                                ) : SizedBox(height: 0) : SizedBox(height: 0),
+                                  similar.isNotEmpty ? Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: Text(type == 'movie' ? "Similar Movies" : "Similar Tv",style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',
+                                          fontWeight: FontWeight.bold,fontSize: 18))) : SizedBox(height: 0),
 
-                                (type == 'movie' || type == 'tv') ? flatRate.isNotEmpty ? Container(
-                                  height: 200,
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey.shade800,
-                                  ),
-                                  child: ListView.builder(
-                                    itemCount:  flatRate.length,
-                                    padding: EdgeInsets.only(bottom: 5),
-                                    itemBuilder: (context, index) {
-                                      return Padding(
-                                        padding: const EdgeInsets.all(8),
-                                        child: Container(
-                                          padding: EdgeInsets.only(right: 10,bottom: 5),
-                                          decoration: BoxDecoration(
-                                              color: AppDesign().bgColor,
-                                              borderRadius: BorderRadius.circular(10)
-                                          ),
-                                          width: MediaQuery.of(context).size.width,
-                                          height: 100,
-                                          child: Row(
-                                            mainAxisAlignment: MainAxisAlignment.start,
-                                            crossAxisAlignment: CrossAxisAlignment.center,
-                                            children: [
-                                              Card(
-                                                elevation: 5,
+                                  similar.isNotEmpty ? SizedBox(
+                                    height: 150,
+                                    child: ListView.builder(
+                                      scrollDirection: Axis.horizontal,
+                                      itemCount: similar.length,
+                                      itemBuilder: (context, index) {
+                                      return SizedBox(
+                                        height: 110,
+                                        width: 100,
+                                        child: Column(
+                                          children: [
+                                            GestureDetector(
+                                              onTap: (){
+                                                setState(() {
+                                                  detailsUrl = ApiService().fetchDetails('https://api.themoviedb.org/3/$type/${similar[index]['id']}?language=en-US&append_to_response=videos,credits,similar');
+                                                  isVideoPlaying = false;
+                                                  key = '';
+                                                });
+                                              },
+                                              child: Card(
                                                 shape: RoundedRectangleBorder(
-                                                    borderRadius: BorderRadius.circular(10)
+                                                  borderRadius: BorderRadius.circular(10)
                                                 ),
-                                                margin: EdgeInsets.all(5),
+                                                color: Colors.white,
+                                                elevation: 5,
                                                 child: ClipRRect(
-                                                    borderRadius: BorderRadius.circular(10),
-                                                    child: Image.network('$imageBaseUrl${flatRate[index]['logo_path']}',fit: BoxFit.fill,errorBuilder: (context, error, stackTrace) {
-                                                      return Image.network(defaultShowUrl,fit: BoxFit.fill);
-                                                    })),
-                                              ),
-
-                                              Expanded(
-                                                child: Text(flatRate[index]['provider_name'],
-                                                    style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',
-                                                        fontSize: 18,fontWeight: FontWeight.bold)),
-                                              ),
-
-                                              Expanded(
-                                                child: Align(
-                                                  alignment: Alignment.centerRight,
-                                                  child: ElevatedButton(onPressed: () async{
-                                                    if((link!='') && await(canLaunchUrl(Uri.parse(link)))){
-                                                      await launchUrl(Uri.parse(link),mode: LaunchMode.externalApplication);
-                                                    }else{
-                                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Url cannot be launched')));
-                                                    }
-                                                  },
-                                                      style: ElevatedButton.styleFrom(
-                                                        backgroundColor: AppDesign().primaryAccent,
-                                                      ),
-                                                      child: Icon(Icons.arrow_circle_right,color: Colors.white)),
-                                                ),
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      );
-                                    },),
-                                ) : SizedBox(height: 0) : SizedBox(height: 0),
-
-                                similar.isNotEmpty ? Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Text(type == 'movie' ? "Similar Movies" : "Similar Tv",style: TextStyle(color: AppDesign().textColor,fontFamily: 'Roboto',
-                                        fontWeight: FontWeight.bold,fontSize: 18))) : SizedBox(height: 0),
-
-                                similar.isNotEmpty ? SizedBox(
-                                  height: 150,
-                                  child: ListView.builder(
-                                    scrollDirection: Axis.horizontal,
-                                    itemCount: similar.length,
-                                    itemBuilder: (context, index) {
-                                    return SizedBox(
-                                      height: 110,
-                                      width: 100,
-                                      child: Column(
-                                        children: [
-                                          GestureDetector(
-                                            onTap: (){
-                                              setState(() {
-                                                detailsUrl = ApiService().fetchDetails('https://api.themoviedb.org/3/$type/${similar[index]['id']}?language=en-US&append_to_response=videos,credits,similar');
-                                                isVideoPlaying = false;
-                                                key = '';
-                                              });
-                                            },
-                                            child: Card(
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.circular(10)
-                                              ),
-                                              color: Colors.white,
-                                              elevation: 5,
-                                              child: ClipRRect(
-                                                borderRadius: BorderRadius.circular(10),
-                                                child: Image.network(
-                                                  '$imageBaseUrl${similar[index]['poster_path']}',
-                                                  errorBuilder: (context, error, stackTrace) {
-                                                    return Image.network(
-                                                      defaultImageUrl,fit: BoxFit.cover,
-                                                    );
-                                                  },
-                                                  fit: BoxFit.cover,
+                                                  borderRadius: BorderRadius.circular(10),
+                                                  child: Image.network(
+                                                    '$imageBaseUrl${similar[index]['poster_path']}',
+                                                    errorBuilder: (context, error, stackTrace) {
+                                                      return Image.network(
+                                                        defaultImageUrl,fit: BoxFit.cover,
+                                                      );
+                                                    },
+                                                    fit: BoxFit.cover,
+                                                  ),
                                                 ),
                                               ),
                                             ),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  }),
-                                ) : SizedBox(height: 0),
+                                          ],
+                                        ),
+                                      );
+                                    }),
+                                  ) : SizedBox(height: 0),
 
-                                type == 'tv' ? SizedBox(
-                                  width: MediaQuery.of(context).size.width,
-                                  child: ElevatedButton(onPressed: (){
-                                    Navigator.push(context,MaterialPageRoute(builder: (context) => AllEpisodes(name: title,imgUrl: posterPath,noOFSeasons: totalSeasons,seasons: seasons,id: id.toString())));
-                                  },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: AppDesign().primaryAccent,
-                                      ),
-                                      child: Text("View all seasons",style: TextStyle(color: AppDesign().textColor))),
-                                ) : SizedBox(height: 0)
-                              ],
+                                  type == 'tv' ? SizedBox(
+                                    width: MediaQuery.of(context).size.width,
+                                    child: ElevatedButton(onPressed: (){
+                                      Navigator.push(context,MaterialPageRoute(builder: (context) => AllEpisodes(name: title,imgUrl: posterPath,noOFSeasons: totalSeasons,seasons: seasons,id: id.toString())));
+                                    },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: AppDesign().primaryAccent,
+                                        ),
+                                        child: Text("View all seasons",style: TextStyle(color: AppDesign().textColor))),
+                                  ) : SizedBox(height: 0)
+                                ],
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               );
             }else{

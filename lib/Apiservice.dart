@@ -61,8 +61,8 @@ class ApiService{
 
   Future<void> shareApp(BuildContext context) async{
     final params = ShareParams(
-      title: "Download the CineTrack app now!!",
-      text: "Explore trending movies,tv shows manage watchlist, profile.",
+      uri: Uri.parse("https://drive.google.com/file/d/1orNJnOddUneNcAfkJg7lgmz8Dnf6knI0/view?usp=sharing"),
+      title : "Explore trending movies,tv shows manage watchlist, profile easily through CineTrack",
     );
 
     final result = await SharePlus.instance.share(params);

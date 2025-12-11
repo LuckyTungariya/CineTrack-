@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:tmdbmovies/Apiservice.dart';
 import 'package:tmdbmovies/appdesign.dart';
+import 'package:tmdbmovies/sharedprefs.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
@@ -19,7 +20,13 @@ class _SingleEpisodePageState extends State<SingleEpisodePage> {
   late YoutubePlayerController _youtubePlayerController;
   late bool isVideoPlaying;
   late String key;
+  late String? userId;
+  String id = '';
+  bool _isloading = false;
+  bool isAdded = false;
+  List<String>? addedMedia;
   Map<dynamic,dynamic> detailsArray = {};
+  late Future<Map<dynamic, dynamic>> _episodeFuture;
   final imageBaseUrl = 'https://image.tmdb.org/t/p/w500';
   final defaultImageUrl = 'https://upload.wikimedia.org/wikipedia/commons/9/99/Sample_User_Icon.png';
   final defaultShowUrl = 'https://upload.wikimedia.org/wikipedia/commons/f/fc/No_picture_available.png';
@@ -27,8 +34,17 @@ class _SingleEpisodePageState extends State<SingleEpisodePage> {
   @override
   void initState() {
     super.initState();
+    _getUserId();
     detailsUrl = 'https://api.themoviedb.org/3/tv/${widget.seriesId}/season/${widget.seasonNumber}/episode/${widget.episodeNumber}?language=en-US&append_to_response=credits,videos';
+    _episodeFuture = ApiService().fetchContent(detailsUrl);
     isVideoPlaying = false;
+  }
+
+  void _getUserId() async{
+    userId = await SharedPreferenceHelper().getUserId();
+    setState(() {
+
+    });
   }
 
   @override
@@ -44,7 +60,7 @@ class _SingleEpisodePageState extends State<SingleEpisodePage> {
             fontFamily: 'Roboto',fontWeight: FontWeight.bold,fontSize: 20)),
       ),
       body: FutureBuilder(
-          future: ApiService().fetchContent(detailsUrl),
+          future: _episodeFuture,
           builder: (context, snapshot) {
             if(snapshot.connectionState == ConnectionState.waiting){
               return Shimmer.fromColors(
@@ -56,9 +72,12 @@ class _SingleEpisodePageState extends State<SingleEpisodePage> {
                     ),
                   ));
             }else if(snapshot.hasError){
-              return Center(child: Text("Data has some error"));
+              return Center(child: Text("Error loading data",style: TextStyle(color: Colors.white)));
             }else if(snapshot.hasData){
               detailsArray = snapshot.data!;
+              var title = detailsArray['name'] ?? 'Not available';
+              var posterPath = detailsArray['still_path']!=null ? '$imageBaseUrl${detailsArray['still_path']}' : defaultShowUrl;
+              id = detailsArray['id'].toString();
               List crew = detailsArray['crew'];
               List cast = detailsArray['credits']?['cast'] ?? [];
               List videos = detailsArray['videos']?['results'] ?? [];
@@ -78,7 +97,6 @@ class _SingleEpisodePageState extends State<SingleEpisodePage> {
                                   width: MediaQuery.of(context).size.width,
                                   showVideoProgressIndicator: true,
                                   progressIndicatorColor: Colors.white),
-
                                   builder: (context, player){
                                     return Column(
                                       children: [
@@ -148,27 +166,6 @@ class _SingleEpisodePageState extends State<SingleEpisodePage> {
 
                               SizedBox(
                                 height: 20,
-                              ),
-
-                                  SizedBox(
-                                    width: MediaQuery.of(context).size.width,
-                                    child: ElevatedButton(onPressed: (){},
-                                        style: ElevatedButton.styleFrom(
-                                          padding: EdgeInsets.all(10),
-                                          backgroundColor: AppDesign().primaryAccent,
-                                        ),
-                                        child: Row(
-                                          spacing: 1,
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Icon(Icons.add,color: Colors.white),
-                                            Text("Add to watchlist",style: TextStyle(color: Colors.white,fontFamily: 'Roboto'))
-                                          ],
-                                        )),
-                                  ),
-
-                              SizedBox(
-                                height: 10,
                               ),
 
                               Text("Synopsis",style: TextStyle(color: AppDesign().textColor,
